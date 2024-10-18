@@ -111,7 +111,8 @@ class BloomFilter(object):
         
         """
         month = datetime.now().month # 当前月份
-        BLOOMFILTER_KEY = key +":" + str(month)  # 生成布隆过滤器key
+        year = datetime.now().year # 当前年份
+        BLOOMFILTER_KEY = key + ":" + str(year) +  ":" +str(month)  # 生成布隆过滤器key
         return BLOOMFILTER_KEY
 
     @lru_cache(maxsize=1024)

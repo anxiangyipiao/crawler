@@ -19,13 +19,15 @@ NEWSPIDER_MODULE = "base.spiders"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+LOG_LEVEL = "INFO"
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 2
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -103,8 +105,8 @@ FEED_EXPORT_ENCODING = "utf-8"
 
 
 # redis
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
+REDIS_HOST = "43.128.136.204"
+REDIS_PORT = 16379
 REDIS_DB = 0
 
 # rabbitmq
