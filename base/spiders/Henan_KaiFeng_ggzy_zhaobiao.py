@@ -79,6 +79,6 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
                     'params': None
                 }
         # 翻页
-        self.request_next_page(baseItem, page, param)
+        self.request_next_page(baseItem, page, request_params)
         
 

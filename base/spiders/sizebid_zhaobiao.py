@@ -28,9 +28,9 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
              # 设置请求参数
             request_params = {
                 'request_body': None,
-                'url': self.start_urls.format(page=62),
+                'url': self.start_urls.format(page=1),
                 'method': 'GET',
-                'meta': {'page': 62},
+                'meta': {'page': 1},
                 'callback': self.parse,
                 'cookies': None,
                 'headers': None,
@@ -66,16 +66,13 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
       
         
         page = page + 1
-        urls = self. start_urls.format(page = page)
         request_params = {
-                'request_body': None,
-                'url': urls,
-                'method': 'GET',
+                'url': self. start_urls.format(page = page),
                 'meta': {'page': page},
                 'callback': self.parse,
                 'params': None
             }
         
         # 爬取下一页
-        yield self.parse_task(RequestItem(**request_params))
+        yield self.request_next_page(baseItem, page, request_params)
 

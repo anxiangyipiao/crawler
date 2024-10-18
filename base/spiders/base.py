@@ -230,7 +230,7 @@ class BaseListSpider(scrapy.Spider):
         """
 
         # 判断是否有下一页
-        if not self.is_time_out(baseItem['publish_time']) and page < self.max_page:
+        if not self.is_time_stop(baseItem['publish_time']) and page < self.max_page:
             
             return True
         
@@ -254,7 +254,7 @@ class BaseListSpider(scrapy.Spider):
             
             # 爬取下一页
             self.log(f"Requesting next page: {page}")
-            yield self.parse_task(RequestItem(**request_params))
+            return self.parse_task(RequestItem(**request_params))
         else:
             self.log(f"No next page or stopping condition met at page {page}.")
 
