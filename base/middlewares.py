@@ -148,7 +148,6 @@ class PlaywrightMiddleware:
         return deferred_from_coro(self._process_request(request, spider))
 
 
-
 class BaseRetryMiddleware(RetryMiddleware):
 
     EXCEPTIONS_TO_RETRY = (TimeoutError, 
