@@ -258,7 +258,6 @@ class BaseListSpider(scrapy.Spider):
         else:
             self.log(f"No next page or stopping condition met at page {page}.")
 
-
     def calculate_task_item(self,task:BaseItem):
         """
 
