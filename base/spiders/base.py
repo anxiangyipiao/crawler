@@ -31,6 +31,7 @@ class BaseListSpider(scrapy.Spider):
     insertCount = 0 # 总任务数量
     successCount = 0 # 成功数量
     failed_urls = [] # 失败的url
+    max_page = 10 # 最大页数
   
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
    
@@ -214,6 +215,50 @@ class BaseListSpider(scrapy.Spider):
         
         return self.is_time_out(time)
     
+
+    def has_next_page(self,baseItem:BaseItem,page:int)->bool:
+        """
+        判断是否有下一页
+        
+        Args:
+            baseItem (BaseItem): 包含基础信息的对象
+            page (int): 当前页码
+        
+        Returns:
+            bool: 如果存在下一页，则返回True；否则返回False
+        
+        """
+
+        # 判断是否有下一页
+        if not self.is_time_out(baseItem['publish_time']) and page < self.max_page:
+            
+            return True
+        
+        return False
+        
+
+    def request_next_page(self, baseItem, page, request_params):
+        """
+        封装翻页请求逻辑，根据当前页码和内容决定是否继续翻页并发起下一页请求。
+        
+        Args:
+            baseItem (BaseItem): 当前页面的内容项
+            page (int): 当前页码
+            param (str): 当前 URL 模板
+
+        Returns:
+            None
+        """
+        # 判断是否有下一页
+        if self.has_next_page(baseItem, page):
+            
+            # 爬取下一页
+            self.log(f"Requesting next page: {page}")
+            yield self.parse_task(RequestItem(**request_params))
+        else:
+            self.log(f"No next page or stopping condition met at page {page}.")
+
+
     def calculate_task_item(self,task:BaseItem):
         """
 
@@ -235,11 +280,12 @@ class BaseListSpider(scrapy.Spider):
             self.insert_time_error()
             raise CloseSpider('time xpath is changed')
 
-        # 检查任务是否满足停止条件,如果时间超过timeRange天则停止爬取
+        # 检查任务是否满足停止条件,如果时间超过timeRange天则跳过
         if self.is_time_stop(task['publish_time']):
             
             self.log("Stopping spider due to time condition.")
-            raise CloseSpider(reason='Time Stop Condition Met')
+            # raise CloseSpider(reason='Time Stop Condition Met')
+            return False
  
         # 检查任务是否满足停止条件,如果url已经爬取过则跳过
         if self.is_url_having(task['url']):

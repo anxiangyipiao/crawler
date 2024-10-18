@@ -69,19 +69,16 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
 
 
 
+        # 翻页,需要构建新的请求参数
         page += 1
-        urls = param.format(page=page)
-
         request_params = {
-                'request_body': None,
-                'url': urls,
-                'method': 'GET',
-                'meta': {'page': page, 'param': param},
-                'callback': self.parse,
-                'params': None
-            }
-        
-        # 爬取下一页
-        yield self.parse_task(RequestItem(**request_params))
+                    'url': param.format(page=page),
+                    'method': 'GET',
+                    'meta': {'page': page, 'param': param},
+                    'callback': self.parse,
+                    'params': None
+                }
+        # 翻页
+        self.request_next_page(baseItem, page, param)
         
 
