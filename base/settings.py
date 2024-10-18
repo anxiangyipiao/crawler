@@ -55,8 +55,9 @@ DOWNLOAD_DELAY = 2
 DOWNLOADER_MIDDLEWARES = {
    "base.middlewares.BaseDownloaderMiddleware": 543, 
    "base.middlewares.BaseHeaderMiddleware": 1, # 添加请求头
-   "base.middlewares.BaseRetryMiddleware": 2, # 重试
-   # "base.middlewares.CustomRetryMiddleware": 3, # 详情页重试
+   "base.middlewares.PlaywrightMiddleware": 2, # 使用playwright渲染页面
+   # "base.middlewares.BaseRetryMiddleware": 2, # 重试
+
 }
 
 

@@ -3,14 +3,13 @@ from .base import BaseListSpider,RequestItem
 
 class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
     # ggzy: 公共资源网     zfcg：政府采购
-    name = "Pindingshan"
+    name = "ahhyzb_zhaobiao"
     start_urls = [
-         "http://ggzy.pds.gov.cn/zzbgg/index_{page}.jhtml",
-        'http://ggzy.pds.gov.cn/gzbgg/index_{page}.jhtml',
+         'https://jypt.ahhyzb.com.cn/jyxx/002001/tradeInfo.html'
     ]
     
     next_base_urls = ''  # 用于下一页网址拼接
-    contents_base_urls = 'http://ggzy.pds.gov.cn'  # 用于拼接详情页网址
+    contents_base_urls = 'https://jypt.ahhyzb.com.cn'  # 用于拼接详情页网址
     province = "河南省"  # 必填，爬虫省份
     city = "平顶山市"  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
@@ -22,14 +21,14 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
         for url in self.start_urls:
             
             time.sleep(1)
-            full_url = url.format(page=1)
-     
+            param = url.split('tradeInfo')[0]
+            
             # 设置请求参数
             request_params = {
                 'request_body': None,
-                'url': full_url,
+                'url': url,
                 'method': 'GET',
-                'meta': {'page': 1, 'param': url,'use_playwright': True},
+                'meta': {'page': 1, 'param': param},
                 'callback': self.parse,
                 'cookies': None,
                 'headers': None,
@@ -43,7 +42,7 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
         param = response.meta['param']
         page = response.meta['page']
 
-        node_list  = response.xpath('//div[@class="channel_list"]/ul/li')
+        node_list  =  response.xpath('//li[@class="infos-item"]')
        
         for node in node_list:
 
@@ -71,7 +70,7 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
         # 翻页,需要构建新的请求参数
         page += 1
         request_params = {
-                    'url': param.format(page=page),
+                    'url': param +  str(page) + '.html',
                     'method': 'GET',
                     'meta': {'page': page, 'param': param},
                     'callback': self.parse,

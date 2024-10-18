@@ -9,6 +9,11 @@ from itemadapter import is_item, ItemAdapter
 from fake_useragent import UserAgent
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 import logging
+from scrapy.http import HtmlResponse
+from scrapy.utils.defer import deferred_from_coro
+from scrapy.exceptions import IgnoreRequest
+from playwright.async_api import async_playwright
+
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +112,6 @@ class BaseDownloaderMiddleware:
         spider.logger.info("Spider opened: %s" % spider.name)
 
 
-
 class BaseHeaderMiddleware:
 
     def process_request(self, request, spider):
@@ -119,35 +123,32 @@ class BaseHeaderMiddleware:
         return None
 
 
-# 从start_requests中发送的请求无限重试次数
-# class BaseRetryMiddleware(RetryMiddleware):
-    
-#         EXCEPTIONS_TO_RETRY = (TimeoutError, ConnectionRefusedError,
-#                             IOError, ValueError)
-    
-#         def process_exception(self, request, exception, spider):        
-                
-#                 # if request.callback.__name__ == 'parse':
-                    
-#                     if isinstance(exception, self.EXCEPTIONS_TO_RETRY) \
-#                             and not request.meta.get('dont_retry', False):
-#                             retryreq = request.copy()
-#                             retryreq.priority = request.priority + self.priority_adjust
-#                             retryreq.dont_filter = True
-#                             retryreq.headers['Cache-Control'] = 'no-cache'
-#                             return retryreq
-                    
+class PlaywrightMiddleware:
+   
+    async def _process_request(self, request, spider):
+        
+        if not request.meta.get('use_playwright'):
+            return None
+        
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)  # 无头模式
+            page = await browser.new_page()
+            await page.goto(request.url)
+            content = await page.content()
+            await browser.close()
 
-#         def get_proxy(self, request):
-#         # 根据请求动态获取代理地址
-#         # 这里仅作为一个示例，实际应用中应根据具体情况来选择代理
-#             proxies = [
-#                 "http://proxy1.example.com:8080",
-#             ]
-#             return proxies[0]                
-          
- 
-# 
+            return HtmlResponse(
+                request.url,
+                body=content.encode('utf-8'), 
+                encoding='utf-8',
+                request=request
+            )
+
+    def process_request(self, request, spider):
+        return deferred_from_coro(self._process_request(request, spider))
+
+
+
 class BaseRetryMiddleware(RetryMiddleware):
 
     EXCEPTIONS_TO_RETRY = (TimeoutError, 
@@ -164,8 +165,6 @@ class BaseRetryMiddleware(RetryMiddleware):
     
     def process_response(self, request, response, spider):
          
-        # if request.callback.__name__ == 'parse_content_detal':
-        #      pass
         return response
    
     def process_exception(self, request, exception, spider):

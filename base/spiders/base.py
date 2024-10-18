@@ -25,7 +25,7 @@ class BaseListSpider(scrapy.Spider):
     site_name = None
     source = None # 网站
     
-    timeRange = 0
+    timeRange = 1
     crawl_today = datetime.now() # 爬虫开始时间
     end_time = None # 爬虫结束时间
     insertCount = 0 # 总任务数量
@@ -215,7 +215,6 @@ class BaseListSpider(scrapy.Spider):
         
         return self.is_time_out(time)
     
-
     def has_next_page(self,baseItem:BaseItem,page:int)->bool:
         """
         判断是否有下一页
@@ -236,7 +235,6 @@ class BaseListSpider(scrapy.Spider):
         
         return False
         
-
     def request_next_page(self, baseItem, page, request_params):
         """
         封装翻页请求逻辑，根据当前页码和内容决定是否继续翻页并发起下一页请求。
