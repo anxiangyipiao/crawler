@@ -10,11 +10,11 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
     
     next_base_urls = ''  # 用于下一页网址拼接
     contents_base_urls = 'https://jypt.ahhyzb.com.cn'  # 用于拼接详情页网址
-    province = "河南省"  # 必填，爬虫省份
-    city = "平顶山市"  # 必填，爬虫城市
+    province = ""  # 必填，爬虫省份
+    city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
-    site_name = '平顶山市公共资源交易中心'
-    source = 'ggzy.pds.gov.cn'
+    site_name = '安徽寰亚国际招标有限公司'
+    source = 'jypt.ahhyzb.com.cn'
 
     def start_requests(self):
 

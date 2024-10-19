@@ -30,6 +30,7 @@ class BaseListSpider(scrapy.Spider):
     end_time = None # 爬虫结束时间
     insertCount = 0 # 总任务数量
     successCount = 0 # 成功数量
+    success_urls = [] # 成功的url
     failed_urls = [] # 失败的url
     max_page = 10 # 最大页数
   
@@ -251,10 +252,10 @@ class BaseListSpider(scrapy.Spider):
         if self.has_next_page(baseItem, page):
             
             # 爬取下一页
-            self.log(f"Requesting next page: {page}")
+            logger.debug(f"Requesting next page: {page}")
             return self.parse_task(RequestItem(**request_params))
         else:
-            self.log(f"No next page or stopping condition met at page {page}.")
+            logger.debug(f"No next page or stopping condition met at page {page}.")
 
     def calculate_task_item(self,task:BaseItem):
         """
@@ -409,17 +410,42 @@ class BaseListSpider(scrapy.Spider):
         data['crawl_count'] += 1
 
         # 计算失败的url
-        if len(self.failed_urls) != 0:
-            for i in self.failed_urls:
-                if i not in data['failed_urls']:
-                    data['failed_urls'].append(i)
-
+        data['failed_urls'] = self.calculate_failed_list(data['failed_urls'])
+       
         # 写入日志
         self.write_source_log(key,data)
 
         # 输出日志
         logger.info("source: %s, time: %s, all_request: %d, success_request: %d, fail_request: %d, last_time: %s, crawl_count: %d" % (self.source,data['time'],data['all_request'],data['success_request'],data['fail_request'],data['last_time'],data['crawl_count']))
+    
+    
+    def calculate_failed_list(self,failed_urls:list)->list:
+        """
+        计算并返回失败URL列表。
         
+        Args:
+            failed_urls (list): 初始失败URL列表。
+        
+        Returns:
+            list: 更新后的失败URL列表。
+        
+        """
+  
+        # 如果失败的url不为空
+        if len(self.failed_urls) != 0:
+            
+            # 如果失败的url不在列表中则添加
+            for i in self.failed_urls:
+                if i not in failed_urls:
+                    failed_urls.append(i)
+
+            # 如果成功的url在列表中则移除
+            for i in self.success_urls:
+                if i in failed_urls:
+                    failed_urls.remove(i)
+
+        return failed_urls
+
     # 爬虫关闭时调用
     def closed(self, reason):
 
@@ -452,6 +478,9 @@ class BaseListSpider(scrapy.Spider):
         
         # 计算成功数量
         self.successCount += 1
+
+        # 插入成功的url
+        self.success_urls.append(item['url'])
 
         # 将url插入到布隆过滤器
         self.add_url(item['url'])

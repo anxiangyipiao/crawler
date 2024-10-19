@@ -19,8 +19,6 @@ NEWSPIDER_MODULE = "base.spiders"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
-LOG_LEVEL = "INFO"
-
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
@@ -62,7 +60,7 @@ DOWNLOADER_MIDDLEWARES = {
 
 
 RETRY_ENABLED = True  # 启用重试
-RETRY_TIMES = 3  # 最大重试次数
+RETRY_TIMES = 2 # 最大重试次数
 # RETRY_HTTP_CODES = [500, 502, 503, 504, 400, 403, 404, 408]  # 需要重试的HTTP状态码
 # RETRY_PRIORITY_ADJUST = -1
 
