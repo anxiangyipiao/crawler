@@ -1,4 +1,5 @@
 import json
+import os
 from scrapy.exceptions import CloseSpider
 import scrapy
 from base.utils.BloomFilter import bloomFilter
@@ -27,13 +28,20 @@ class BaseListSpider(scrapy.Spider):
     
     timeRange = 0
     crawl_today = datetime.now() # 爬虫开始时间
-    end_time = None # 爬虫结束时间
+
     insertCount = 0 # 总任务数量
     successCount = 0 # 成功数量
-    success_urls = [] # 成功的url
+
+    # insert_urls = [] # 插入的url
+    # success_urls = [] # 成功的url
     failed_urls = [] # 失败的url
+
     max_page = 10 # 最大页数
+    init_failed_count = 0 # 初始化失败数量
     max_failures = 10 # 最大失败数量
+
+    # stop_flag = False      # 终止标识
+
   
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
    
@@ -259,6 +267,7 @@ class BaseListSpider(scrapy.Spider):
             logger.debug(f"No next page or stopping condition met at page {page}.")
 
     def calculate_task_item(self,task:BaseItem):
+        
         """
 
         Args:
@@ -294,8 +303,10 @@ class BaseListSpider(scrapy.Spider):
         # 计算任务数量
         try:           
                 self.insertCount += 1
+                self.failed_urls.append(task['url'])
+
         except Exception as e:
-                self.insertCount -= 1
+                
                 logger.error("Insert task item error",e)
 
         return True
@@ -335,8 +346,9 @@ class BaseListSpider(scrapy.Spider):
         # 参数5 本次爬取失败的数量
         # 参数6 今天的日期
         # 参数7 最近一次爬取的时间
-        # 参数8 今天爬取的次数
-        # 参数9 失败的url,存储的是url的列表
+        # 参数8 本轮爬虫运行的次数
+        # 参数9 今天爬取的次数
+        # 参数10 失败的url,存储的是url的列表
         # key 为 source + 日期
 
         data = {
@@ -348,6 +360,7 @@ class BaseListSpider(scrapy.Spider):
             'this_time_success_request': 0,
             'this_time_fail_request': 0,
             'last_time': '',
+            'run_time': '',
             'crawl_count': 0,
             'failed_urls': json.dumps([])
         }
@@ -372,6 +385,7 @@ class BaseListSpider(scrapy.Spider):
             'this_time_success_request': int(data[b'this_time_success_request'].decode('utf-8')),
             'this_time_fail_request': int(data[b'this_time_fail_request'].decode('utf-8')),
             'last_time': data[b'last_time'].decode('utf-8'),
+            'run_time': data[b'run_time'].decode('utf-8'),
             'crawl_count': int(data[b'crawl_count'].decode('utf-8')),
             'failed_urls':  json.loads(data[b'failed_urls'].decode('utf-8'))
         }
@@ -437,11 +451,14 @@ class BaseListSpider(scrapy.Spider):
         # 计算最近一次爬取时间
         data['last_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
+        # 计算爬虫运行时间,转化为秒
+        data['run_time'] = str((datetime.now() - self.crawl_today).seconds)
+
         # 计算爬取次数
         data['crawl_count'] += 1
 
         # 计算失败的url
-        data['failed_urls'] = self.calculate_failed_list(data['failed_urls'])
+        data['failed_urls'] = self.failed_urls
        
         # 写入日志
         self.write_source_log(key,data)
@@ -459,39 +476,12 @@ class BaseListSpider(scrapy.Spider):
             f"today_success_request: {data['today_success_request']},\n"
             f"today_fail_request: {data['today_fail_request']},\n"
             f"last_time: {data['last_time']},\n"
+            f"run_time(second): {data['run_time']},\n"
             f"crawl_count: {data['crawl_count']}\n"
         )
               
-    def calculate_failed_list(self,failed_urls:list)->list:
-        """
-        计算并返回失败URL列表。
-        
-        Args:
-            failed_urls (list): 初始失败URL列表。
-        
-        Returns:
-            list: 更新后的失败URL列表。
-        
-        """
-  
-        # 如果失败的url不为空
-        if len(self.failed_urls) != 0:
-            
-            # 如果失败的url不在列表中则添加
-            for i in self.failed_urls:
-                if i not in failed_urls:
-                    failed_urls.append(i)
-
-            # 如果成功的url在列表中则移除
-            for i in self.success_urls:
-                if i in failed_urls:
-                    failed_urls.remove(i)
-
-        return failed_urls
-
     # 爬虫关闭时调用
     def closed(self, reason):
-            
             # 插入任务日志
             self.insert_task_log()
 
@@ -517,30 +507,43 @@ class BaseListSpider(scrapy.Spider):
 
     def parse_content_detal(self,response):
 
-         # 获取详情页数据
+        # 获取详情页数据
         item:BaseItem = self.parse_content(response)  
         
-        # 计算成功数量
-        self.successCount += 1
+        # # 计算成功数量
+        # self.successCount += 1
 
-        # 插入成功的url
-        self.success_urls.append(item['url'])
+        # # 插入成功的url
+        # # self.success_urls.append(item['url'])
 
-        # 将url插入到布隆过滤器
-        self.add_url(item['url'])
+        # # 将成功的url从失败的url中移除
+        # self.failed_urls.remove(item['url'])
+
+        # # 将url插入到布隆过滤器
+        # self.add_url(item['url'])
 
         yield item
     
     def errback_httpbin(self,failure):
-       
-        request = failure.request
-        self.failed_urls.append(request.url)
+        
+        # 如记录此网页url是失败的，失败的url数量加1
+        self.init_failed_count += 1
+        logger.error(f"Request failed: {failure.value} (Total failures: {self.init_failed_count})")
 
         # 如果失败的url数量超过最大失败数量则停止爬虫
-        if len(self.failed_urls) > self.max_failures:
+        if self.init_failed_count > self.max_failures:
+            logger.error(f"Maximum number of failures ({self.max_failures}) reached. Stopping the spider immediately.")
+            
             raise CloseSpider('max_failures')
+        
+            # 设置终止标识,并在pipeline中关闭爬虫
+            # self.stop_flag = True
 
- 
+            # 执行关闭爬虫
+            # self.closed('max_failures')
+            # 立即终止进程
+            # os._exit(1)
+
     def parse_content(self,response)->BaseItem:
          
 

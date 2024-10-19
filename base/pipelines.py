@@ -9,7 +9,7 @@ import json
 from itemadapter import ItemAdapter
 from .items import BaseItem
 from base.utils.RedisManage import RedisConnectionManager
-
+import os
 
 class BasePipeline:
 
@@ -30,5 +30,29 @@ class BasePipeline:
             # 将item_json存入redis
             self.redis.lpush('result', item_json)
         
-
+            # 更新标识
+            self.calculate_flag(item, spider)
+       
         return item
+    
+
+    def calculate_flag(self,item,spider):
+        
+         # 计算成功数量
+        spider.successCount += 1
+
+        # 将成功的url从失败的url中移除
+        spider.failed_urls.remove(item['url'])
+
+        # 将url插入到布隆过滤器
+        spider.add_url(item['url'])
+    
+
+    # def os_exit(self,spider):
+
+    #     if spider.stop_flag:
+
+    #         # 执行关闭爬虫
+    #         spider.closed('max_failures')
+    #         # 立即终止进程
+    #         os._exit(1)

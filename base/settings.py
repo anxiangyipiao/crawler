@@ -19,6 +19,15 @@ NEWSPIDER_MODULE = "base.spiders"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+
+# 设置每个域名的最大并发请求数量
+CONCURRENT_REQUESTS_PER_DOMAIN = 8
+
+# 或者设置每个IP地址的最大并发请求数量
+CONCURRENT_REQUESTS_PER_IP = 8
+
+
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
