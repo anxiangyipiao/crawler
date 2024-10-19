@@ -25,7 +25,7 @@ class BaseListSpider(scrapy.Spider):
     site_name = None
     source = None # 网站
     
-    timeRange = 1
+    timeRange = 0
     crawl_today = datetime.now() # 爬虫开始时间
     end_time = None # 爬虫结束时间
     insertCount = 0 # 总任务数量
@@ -33,6 +33,7 @@ class BaseListSpider(scrapy.Spider):
     success_urls = [] # 成功的url
     failed_urls = [] # 失败的url
     max_page = 10 # 最大页数
+    max_failures = 10 # 最大失败数量
   
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
    
@@ -394,6 +395,8 @@ class BaseListSpider(scrapy.Spider):
             无异常抛出
         
         """
+        
+       
         key = self.get_key()
 
         # 初始化日志
@@ -444,19 +447,21 @@ class BaseListSpider(scrapy.Spider):
         self.write_source_log(key,data)
 
         # 输出日志
-        logger.info(
+        self.log_info(data)
 
-            f"this_time_all_request: { data['this_time_all_request']},"
-            f"this_time_success_request: {data['this_time_success_request']},"
-            f"this_time_fail_request: {data['this_time_fail_request']},"
-            f"today_all_request: {data['today_all_request']},"
-            f"today_success_request: {data['today_success_request']},"
-            f"today_fail_request: {data['today_fail_request']},"
-            f"last_time: {data['last_time']},"
-            f"crawl_count: {data['crawl_count']}"
+    def log_info(self,data):
+         # 输出日志
+        logger.info(
+            f"\nthis_time_all_request: { data['this_time_all_request']}, \n" 
+            f"this_time_success_request: {data['this_time_success_request']},\n"
+            f"this_time_fail_request: {data['this_time_fail_request']},\n"
+            f"today_all_request: {data['today_all_request']},\n"
+            f"today_success_request: {data['today_success_request']},\n"
+            f"today_fail_request: {data['today_fail_request']},\n"
+            f"last_time: {data['last_time']},\n"
+            f"crawl_count: {data['crawl_count']}\n"
         )
-        
-         
+              
     def calculate_failed_list(self,failed_urls:list)->list:
         """
         计算并返回失败URL列表。
@@ -486,7 +491,8 @@ class BaseListSpider(scrapy.Spider):
 
     # 爬虫关闭时调用
     def closed(self, reason):
-
+            
+            # 插入任务日志
             self.insert_task_log()
 
     def parse_task(self,tasks:RequestItem):
@@ -529,7 +535,12 @@ class BaseListSpider(scrapy.Spider):
        
         request = failure.request
         self.failed_urls.append(request.url)
-        
+
+        # 如果失败的url数量超过最大失败数量则停止爬虫
+        if len(self.failed_urls) > self.max_failures:
+            raise CloseSpider('max_failures')
+
+ 
     def parse_content(self,response)->BaseItem:
          
 
