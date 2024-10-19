@@ -329,18 +329,23 @@ class BaseListSpider(scrapy.Spider):
        
         # 参数1 今天网站更新的总数量
         # 参数2 今天网站爬取的成功数量
-        # 参数3 今天网站爬取的失败数量 
-        # 参数4 今天的日期
-        # 参数5 最近一次爬取的时间
-        # 参数6 今天爬取的次数
-        # 参数7 失败的url,存储的是url的列表
+        # 参数3 今天网站爬取的失败数量
+        # 参数4 本次爬取成功的数量 
+        # 参数5 本次爬取失败的数量
+        # 参数6 今天的日期
+        # 参数7 最近一次爬取的时间
+        # 参数8 今天爬取的次数
+        # 参数9 失败的url,存储的是url的列表
         # key 为 source + 日期
 
         data = {
             'time': self.crawl_today.strftime('%Y-%m-%d'),
-            'all_request': 0,
-            'success_request': 0,
-            'fail_request': 0,
+            'today_all_request': 0,
+            'today_success_request': 0,
+            'today_fail_request': 0,
+            'this_time_all_request': 0,
+            'this_time_success_request': 0,
+            'this_time_fail_request': 0,
             'last_time': '',
             'crawl_count': 0,
             'failed_urls': json.dumps([])
@@ -359,9 +364,12 @@ class BaseListSpider(scrapy.Spider):
         # 转为字典
         return {
             'time': data[b'time'].decode('utf-8'),
-            'all_request': int(data[b'all_request'].decode('utf-8')),
-            'success_request': int(data[b'success_request'].decode('utf-8')),
-            'fail_request': int(data[b'fail_request'].decode('utf-8')),
+            'today_all_request': int(data[b'today_all_request'].decode('utf-8')),
+            'today_success_request': int(data[b'today_success_request'].decode('utf-8')),
+            'today_fail_request': int(data[b'today_fail_request'].decode('utf-8')),
+            'this_time_all_request': int(data[b'this_time_all_request'].decode('utf-8')),
+            'this_time_success_request': int(data[b'this_time_success_request'].decode('utf-8')),
+            'this_time_fail_request': int(data[b'this_time_fail_request'].decode('utf-8')),
             'last_time': data[b'last_time'].decode('utf-8'),
             'crawl_count': int(data[b'crawl_count'].decode('utf-8')),
             'failed_urls':  json.loads(data[b'failed_urls'].decode('utf-8'))
@@ -394,14 +402,34 @@ class BaseListSpider(scrapy.Spider):
         # 读取日志
         data = self.read_source_log(key)
 
-        # 计算总数量
-        data['all_request'] = data['all_request'] +  self.insertCount -  data['fail_request']
+        # # 计算今日总请求数量
+        # data['all_request'] = data['all_request'] +  self.insertCount -  data['fail_request']
 
-        # 计算成功数量
-        data['success_request'] += self.successCount
+        # # 计算今日成功数量
+        # data['success_request'] += self.successCount
 
-        # 计算失败数量
-        data['fail_request'] = data['all_request'] - data['success_request']
+        # # 计算今日失败数量
+        # data['fail_request'] = data['all_request'] - data['success_request']
+
+
+        #  计算本次爬总数量
+        data['this_time_all_request'] = self.insertCount
+
+        # 计算本次爬取成功数量
+        data['this_time_success_request'] = self.successCount
+
+        # 计算本次爬取失败数量
+        data['this_time_fail_request'] = self.insertCount - self.successCount
+
+
+        # 计算今日总请求数量
+        data['today_all_request'] = data['today_all_request'] +  self.insertCount -  data['today_fail_request']
+
+        # 计算今日成功数量
+        data['today_success_request'] += self.successCount
+
+        # 计算今日失败数量
+        data['today_fail_request'] = data['today_all_request'] - data['today_success_request']
 
         # 计算最近一次爬取时间
         data['last_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -416,9 +444,19 @@ class BaseListSpider(scrapy.Spider):
         self.write_source_log(key,data)
 
         # 输出日志
-        logger.info("source: %s, time: %s, all_request: %d, success_request: %d, fail_request: %d, last_time: %s, crawl_count: %d" % (self.source,data['time'],data['all_request'],data['success_request'],data['fail_request'],data['last_time'],data['crawl_count']))
-    
-    
+        logger.info(
+
+            f"this_time_all_request: { data['this_time_all_request']},"
+            f"this_time_success_request: {data['this_time_success_request']},"
+            f"this_time_fail_request: {data['this_time_fail_request']},"
+            f"today_all_request: {data['today_all_request']},"
+            f"today_success_request: {data['today_success_request']},"
+            f"today_fail_request: {data['today_fail_request']},"
+            f"last_time: {data['last_time']},"
+            f"crawl_count: {data['crawl_count']}"
+        )
+        
+         
     def calculate_failed_list(self,failed_urls:list)->list:
         """
         计算并返回失败URL列表。
