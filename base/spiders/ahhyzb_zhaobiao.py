@@ -66,7 +66,6 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
                 yield self.parse_task(RequestItem(**request_params))
 
 
-
         # 翻页,需要构建新的请求参数
         page += 1
         request_params = {

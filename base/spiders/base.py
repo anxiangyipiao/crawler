@@ -506,22 +506,10 @@ class BaseListSpider(scrapy.Spider):
         pass
 
     def parse_content_detal(self,response):
-
+        
         # 获取详情页数据
         item:BaseItem = self.parse_content(response)  
         
-        # # 计算成功数量
-        # self.successCount += 1
-
-        # # 插入成功的url
-        # # self.success_urls.append(item['url'])
-
-        # # 将成功的url从失败的url中移除
-        # self.failed_urls.remove(item['url'])
-
-        # # 将url插入到布隆过滤器
-        # self.add_url(item['url'])
-
         yield item
     
     def errback_httpbin(self,failure):
@@ -545,14 +533,61 @@ class BaseListSpider(scrapy.Spider):
             # os._exit(1)
 
     def parse_content(self,response)->BaseItem:
+        """
+        解析响应内容，根据响应类型（HTML或JSON）填充Item对象。
+        
+        Args:
+            response (Response): 响应对象，包含待解析的响应内容。
+        
+        Returns:
+            BaseItem: 填充后的Item对象。
+        
+        """
          
-
-        # response 返回的类型包括html和json两种格式
-        # 处理html格式
         item = response.meta['item']
         
-        try:
+        # response 返回的类型包括html和json两种格式
 
+         # 尝试从 Content-Type 头中获取响应类型
+        content_type = response.headers.get('Content-Type', b'').decode('utf-8')
+
+        if 'json' in content_type:
+            # 解析JSON
+            item = self.parse_json(response, item)
+        elif 'html' in content_type:
+            # 解析HTML
+            item = self.parse_html(response, item)
+        else:
+            # 如果无法从 Content-Type 确定类型，尝试其他方法
+            item = self.determine_response_type(response, item)
+
+        return item
+
+    def determine_response_type(self, response, item: BaseItem) -> BaseItem:
+        # 尝试通过响应内容来确定类型
+        try:
+            # 尝试解析为JSON
+            if json.loads(response.text):
+                return self.parse_json(response, item)
+            
+        except json.JSONDecodeError:
+            # 如果解析失败，假设为HTML
+            return self.parse_html(response, item)
+
+    def parse_html(self,response,item:BaseItem)->BaseItem:
+        """
+        解析HTML响应并填充item对象。
+        
+        Args:
+            response (Response): Scrapy的Response对象，包含网页的响应内容。
+            item (BaseItem): 需要填充数据的item对象。
+        
+        Returns:
+            BaseItem: 填充了网页内容的item对象。
+        
+        """
+        
+        try:
             if response.xpath('//iframe'):
                 # 获取pdf文件地址
                 req_url = response.xpath('//iframe/@src').extract_first()
@@ -567,4 +602,30 @@ class BaseListSpider(scrapy.Spider):
         except Exception as e:
 
             logger.error("Parse content error",e)
+            return None
+        
+    def parse_json(self,response,item:BaseItem)->BaseItem:
+        """
+        解析JSON格式的响应数据，并将解析后的数据赋值给传入的item的'contents'字段
+        
+        Args:
+            response (Response): 响应对象，其中包含了需要解析的JSON数据
+            item (BaseItem): 待填充数据的对象
+        
+        Returns:
+            BaseItem: 填充了JSON数据的item对象，如果解析失败则返回None
+        
+        Raises:
+            无
+        
+        """
+        
+        try:
+            data = response.json()
+            item['contents'] = data
+            return item
+
+        except Exception as e:
+
+            logger.error("Parse json error",e)
             return None
