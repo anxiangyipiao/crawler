@@ -42,7 +42,6 @@ class BaseListSpider(scrapy.Spider):
 
     # stop_flag = False      # 终止标识
 
-  
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
    
     '''# @classmethod
@@ -61,7 +60,13 @@ class BaseListSpider(scrapy.Spider):
     #     crawler.signals.connect(spider.closed, signal=signals.spider_closed)
     #     return spider
     '''
-    
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.task_redis_server.rpush('running_spiders', self.name)
+        logger.info(f'Spider {self.name} started and added to running queue.')
+
+   
     def get_base_item(self)->BaseItem:
         """
         返回一个包含基本信息的 BaseItem 对象。
@@ -466,6 +471,10 @@ class BaseListSpider(scrapy.Spider):
         # 输出日志
         self.log_info(data)
 
+
+        # 清空任务数量
+        self.task_redis_server.lrem('running_spiders', 0, self.name)
+
     def log_info(self,data):
          # 输出日志
         logger.info(
@@ -479,7 +488,8 @@ class BaseListSpider(scrapy.Spider):
             f"run_time(second): {data['run_time']},\n"
             f"crawl_count: {data['crawl_count']}\n"
         )
-              
+        
+
     # 爬虫关闭时调用
     def closed(self, reason):
             # 插入任务日志

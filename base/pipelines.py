@@ -23,12 +23,8 @@ class BasePipeline:
         # 判断是否是BaseItem的实例
         if isinstance(item, BaseItem):
             
-            # 将item转换为字典
-            item_dict = dict(item)
-            # 将item_dict转换为json字符串
-            item_json = json.dumps(item_dict, ensure_ascii=False)
-            # 将item_json存入redis
-            self.redis.lpush('result', item_json)
+            # 保存item
+            self.save_item(item)
         
             # 更新标识
             self.calculate_flag(item, spider)
@@ -48,6 +44,16 @@ class BasePipeline:
         spider.add_url(item['url'])
     
 
+    def save_item(self,item):
+
+        # 将item转换为字典
+        item_dict = dict(item)
+        # 将item_dict转换为json字符串
+        item_json = json.dumps(item_dict, ensure_ascii=False)
+        # 将item_json存入redis
+        self.redis.lpush('result', item_json)
+
+        
     # def os_exit(self,spider):
 
     #     if spider.stop_flag:
