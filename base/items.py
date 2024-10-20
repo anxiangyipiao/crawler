@@ -65,6 +65,7 @@ class BaseItem(scrapy.Item):
     title = scrapy.Field()  # 标题
     publish_time = scrapy.Field()  # 发布时间
     url = scrapy.Field()  # 详情页链接
+    origin_url = scrapy.Field()  # 原始链接
     contents = scrapy.Field()  # 详情页内容
     
 
