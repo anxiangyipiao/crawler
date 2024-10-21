@@ -7,7 +7,7 @@
 # useful for handling different item types with a single interface
 import json
 from itemadapter import ItemAdapter
-from .items import BaseItem
+from baseSpider.items import BaseItem
 from baseSpider.utils.RedisManage import RedisConnectionManager
 
 
