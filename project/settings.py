@@ -13,7 +13,7 @@ SPIDER_MODULES = ["project.spiders"]
 NEWSPIDER_MODULE = "project.spiders"
 
 
-LOG_LEVEL = "DEBUG"
+# LOG_LEVEL = "DEBUG"
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "project (+http://www.yourdomain.com)"
@@ -52,9 +52,9 @@ LOG_LEVEL = "DEBUG"
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-#    "project.middlewares.ProjectDownloaderMiddleware": 543,
-}
+# DOWNLOADER_MIDDLEWARES = {
+# #    "project.middlewares.ProjectDownloaderMiddleware": 543,
+# }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
