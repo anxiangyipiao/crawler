@@ -60,7 +60,7 @@ class BaseSpiderObject(scrapy.Spider):
             },
             'ROBOTSTXT_OBEY': False,
             'DOWNLOAD_DELAY': 2,
-            'CONCURRENT_REQUESTS_PER_DOMAIN': 16,
+            'CONCURRENT_REQUESTS_PER_DOMAIN': 10,
             'CONCURRENT_REQUESTS_PER_IP': 10,
             'RETRY_ENABLED': True,
             'RETRY_TIMES': 2,
