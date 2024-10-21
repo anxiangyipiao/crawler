@@ -64,6 +64,7 @@ NEWSPIDER_MODULE = "project.spiders"
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+
 # ITEM_PIPELINES = {
 #    "project.pipelines.ProjectPipeline": 300,
 # }

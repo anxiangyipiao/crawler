@@ -11,7 +11,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     ]
     
     contents_base_urls = ''  # 用于拼接详情页网址
-
     province = "山东省"  # 必填，爬虫省份
     city = "济南市"  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
