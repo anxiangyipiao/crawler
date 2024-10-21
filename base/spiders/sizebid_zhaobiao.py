@@ -2,7 +2,7 @@ import time
 from .base import BaseListSpider,RequestItem
 
 
-
+# 数据量大
 class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "sizebid_zhaobiao"
@@ -17,13 +17,11 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseListSpider):
     site_name = '势必得招标网'
     source = 'm.sizebid.com'
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
-    }
+
+    max_page = 10  # 必填，最大页数
 
    
     def start_requests(self):
-
 
              # 设置请求参数
             request_params = {

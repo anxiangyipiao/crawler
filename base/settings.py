@@ -21,16 +21,13 @@ ROBOTSTXT_OBEY = False
 
 
 # 设置每个域名的最大并发请求数量
-CONCURRENT_REQUESTS_PER_DOMAIN = 8
+CONCURRENT_REQUESTS_PER_DOMAIN = 10
 
 # 或者设置每个IP地址的最大并发请求数量
-CONCURRENT_REQUESTS_PER_IP = 8
-
-
+CONCURRENT_REQUESTS_PER_IP = 10
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
-
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
