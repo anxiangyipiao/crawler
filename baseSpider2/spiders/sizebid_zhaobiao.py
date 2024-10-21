@@ -1,5 +1,5 @@
 
-from baseSpider.baseSpider import BaseSpider,RequestItem
+from ..baseSpider import BaseSpider,RequestItem
 
 
 # 数据量大
