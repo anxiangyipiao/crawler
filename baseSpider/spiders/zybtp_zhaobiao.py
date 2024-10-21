@@ -1,6 +1,6 @@
 import time
 from urllib.parse import urlencode
-from .base import BaseSpider,RequestItem
+from ..baseSpider import BaseSpider,RequestItem
 
 # 建设工程
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpider):

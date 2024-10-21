@@ -1,5 +1,5 @@
 import time
-from .base import BaseSpider,RequestItem
+from baseSpider.baseSpider import BaseSpider,RequestItem
 
 
 # 数据量大
