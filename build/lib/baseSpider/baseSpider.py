@@ -8,7 +8,7 @@ from baseSpider.items import BaseItem,RequestItem
 from scrapy import signals
 import logging
 import re
-from baseSpider.utils.Ocr import load_custom_settings
+
 
 
 
@@ -53,12 +53,36 @@ class BaseSpiderObject(scrapy.Spider):
     }
 
     # 使用辅助函数加载设置
-    custom_settings = load_custom_settings(overrides)
+    custom_settings = None
     
 
     def __init__(self, *args, **kwargs):
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
+
+    def load_custom_settings(self):
+
+        custom_settings = {
+
+            'DOWNLOADER_MIDDLEWARES': {
+                "baseSpider.middlewares.BaseDownloaderMiddleware": 543, 
+                "baseSpider.middlewares.BaseHeaderMiddleware": 1, # 添加请求头
+                "baseSpider.middlewares.PlaywrightMiddleware": 2, # 使用playwright渲染页面
+            },
+            'ITEM_PIPELINES': {
+                'base_project.pipelines.BasePipeline': 300, # 数据处理管道
+            },
+            'ROBOTSTXT_OBEY' : False,
+            'DOWNLOAD_DELAY': 2,
+            'CONCURRENT_REQUESTS_PER_DOMAIN': 16,
+            'CONCURRENT_REQUESTS_PER_IP' : 10,
+            'RETRY_ENABLED' : True,
+            'RETRY_TIMES': 2,
+            
+        }
+
+        return custom_settings
+
 
    
     def get_base_item(self)->BaseItem:

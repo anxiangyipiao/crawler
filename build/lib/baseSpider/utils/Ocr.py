@@ -29,22 +29,3 @@ def recognize_captcha_from_url(image_url: str) -> str:
 
 
 
-from scrapy.utils.project import get_project_settings
-
-def load_custom_settings(overrides=None):
-    """
-    加载项目的设置，并允许覆盖或添加新的设置。
-
-    :param overrides: 一个字典，用于覆盖或添加新的设置
-    :return: 合并后的设置字典
-    """
-    if overrides is None:
-        overrides = {}
-
-    # 获取项目的设置
-    project_settings = get_project_settings()
-
-    # 将项目的设置与覆盖设置合并
-    custom_settings = {**project_settings, **overrides}
-
-    return custom_settings
