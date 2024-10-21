@@ -1,4 +1,4 @@
-# Scrapy settings for base project
+# Scrapy settings for project project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,31 +7,25 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "baseSpider2"
+BOT_NAME = "project"
 
-SPIDER_MODULES = ["baseSpider2.spiders"]
-NEWSPIDER_MODULE = "baseSpider2.spiders"
+SPIDER_MODULES = ["project.spiders"]
+NEWSPIDER_MODULE = "project.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "base (+http://www.yourdomain.com)"
+#USER_AGENT = "project (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = False
-
-
-# 设置每个域名的最大并发请求数量
-CONCURRENT_REQUESTS_PER_DOMAIN = 10
-
-# 或者设置每个IP地址的最大并发请求数量
-CONCURRENT_REQUESTS_PER_IP = 10
+ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
+
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 2
+#DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -51,24 +45,14 @@ DOWNLOAD_DELAY = 2
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    "base.middlewares.BaseSpiderMiddleware": 543,
+#    "project.middlewares.ProjectSpiderMiddleware": 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-   "baseSpider2.middlewares.BaseDownloaderMiddleware": 543, 
-   "baseSpider2.middlewares.BaseHeaderMiddleware": 1, # 添加请求头
-   "baseSpider2.middlewares.PlaywrightMiddleware": 2, # 使用playwright渲染页面
-   # "base.middlewares.BaseRetryMiddleware": 2, # 重试
-
-}
-
-
-RETRY_ENABLED = True  # 启用重试
-RETRY_TIMES = 2 # 最大重试次数
-# RETRY_HTTP_CODES = [500, 502, 503, 504, 400, 403, 404, 408]  # 需要重试的HTTP状态码
-# RETRY_PRIORITY_ADJUST = -1
+#DOWNLOADER_MIDDLEWARES = {
+#    "project.middlewares.ProjectDownloaderMiddleware": 543,
+#}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -78,9 +62,9 @@ RETRY_TIMES = 2 # 最大重试次数
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-   "baseSpider2.pipelines.BasePipeline": 300,
-}
+#ITEM_PIPELINES = {
+#    "project.pipelines.ProjectPipeline": 300,
+#}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -107,35 +91,3 @@ ITEM_PIPELINES = {
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
-
-
-# redis
-REDIS_HOST = "43.128.136.204"
-REDIS_PORT = 16379
-REDIS_DB = 0
-
-# rabbitmq
-RABBITMQ_HOST = "localhost"
-RABBITMQ_PORT = 5672
-RABBITMQ_USER = "guest"
-RABBITMQ_PASSWORD = "<PASSWORD>"
-RABBITMQ_VHOST = "/"
-RABBITMQ_EXCHANGE = ""
-
-# mysql
-MYSQL_HOST = "58.213.106.158"
-MYSQL_PORT = 36000
-MYSQL_USER = "bidspider2"
-MYSQL_PASSWORD = "cSFbhtFencqH3knm"
-MYSQL_DB = "bidSpider2"
-
-
-
-# bloomfilter
-# 用于布隆过滤器的redis key
-BLOOMFILTER_KEY = "bloomfilter"
-
-# info-level 输出日志，debug-level 不输出日志
-LOG_LEVEL = "INFO"
-
-
