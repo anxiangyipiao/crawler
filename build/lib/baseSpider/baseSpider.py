@@ -8,6 +8,8 @@ from baseSpider.items import BaseItem,RequestItem
 from scrapy import signals
 import logging
 import re
+from scrapy.utils.project import get_project_settings
+
 
 
 logger = logging.getLogger(__name__)
@@ -42,21 +44,31 @@ class BaseSpiderObject(scrapy.Spider):
     # stop_flag = False      # 终止标识
 
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
-   
+    
 
-    custom_settings = {
-        'ITEM_PIPELINES': {
-          "baseSpider.pipelines.baseSpiderPipeline": 300,
-        }
-    }
-
+    custom_settings = None # 自定义设置
+    
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.custom_settings = self.load_custom_settings()
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
 
+
+    def load_custom_settings(self):
+        """
+        加载项目的设置，并允许覆盖或添加新的设置。
+        :return: 合并后的设置字典
+        """
+    
+        # 获取项目的设置
+        project_settings = get_project_settings()
+
+        # 将项目的设置与覆盖设置合并
+        custom_settings = {**project_settings}
+
+        return custom_settings
    
     def get_base_item(self)->BaseItem:
         """
