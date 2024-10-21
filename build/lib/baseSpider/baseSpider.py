@@ -46,56 +46,33 @@ class BaseSpiderObject(scrapy.Spider):
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
     
 
-    # 定义要覆盖或添加的设置
-    overrides = {
+   # 定义要覆盖或添加的设置
+    overrides_settings = {}
+    custom_settings = {
+            **overrides_settings,
+         'DOWNLOADER_MIDDLEWARES': {
+                "baseSpider.middlewares.BaseDownloaderMiddleware": 543, 
+                "baseSpider.middlewares.BaseHeaderMiddleware": 1,  # 添加请求头
+                "baseSpider.middlewares.PlaywrightMiddleware": 2,  # 使用playwright渲染页面
+            },
+            'ITEM_PIPELINES': {
+                "baseSpider.pipelines.baseSpiderPipeline": 300,
+            },
+            'ROBOTSTXT_OBEY': False,
+            'DOWNLOAD_DELAY': 2,
+            'CONCURRENT_REQUESTS_PER_DOMAIN': 10,
+            'CONCURRENT_REQUESTS_PER_IP': 10,
+            'RETRY_ENABLED': True,
+            'RETRY_TIMES': 2,
     }
-
-    custom_settings = None
     
 
     def __init__(self, *args, **kwargs):
         super(BaseSpiderObject, self).__init__(*args, **kwargs)
-        self.custom_settings = self.load_custom_settings()
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
 
-    def load_custom_settings(self):
-    
-        
-        dict = {
-
-                'DOWNLOADER_MIDDLEWARES': {
-                    "baseSpider.middlewares.BaseDownloaderMiddleware": 543, 
-                    "baseSpider.middlewares.BaseHeaderMiddleware": 1, # 添加请求头
-                    "baseSpider.middlewares.PlaywrightMiddleware": 2, # 使用playwright渲染页面
-                },
-                'ITEM_PIPELINES': {
-                    'base_project.pipelines.BasePipeline': 300, # 数据处理管道
-                },
-                'ROBOTSTXT_OBEY' : False,
-                'DOWNLOAD_DELAY': 2,
-                'CONCURRENT_REQUESTS_PER_DOMAIN': 16,
-                'CONCURRENT_REQUESTS_PER_IP' : 10,
-                'RETRY_ENABLED' : True,
-                'RETRY_TIMES': 2,
-
-
-        }
-
-        if self.overrides is not None:
-
-            custom_settings = {
-                **self.overrides,
-                **dict           
-            }
-
-        else:
-             custom_settings = dict
-
-        return custom_settings
-
-
-   
+  
     def get_base_item(self)->BaseItem:
         """
         返回一个包含基本信息的 BaseItem 对象。
