@@ -19,7 +19,9 @@ class BasePipeline:
 
 
     def process_item(self, item, spider):
+        
 
+        print("开始处理item")
         # 判断是否是BaseItem的实例
         if isinstance(item, BaseItem):
             
@@ -28,7 +30,6 @@ class BasePipeline:
         
             # 更新标识
             self.calculate_flag(item, spider)
-
 
         else:
             print("不是BaseItem")
