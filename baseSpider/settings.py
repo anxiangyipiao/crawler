@@ -7,11 +7,6 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.abspath('.')))
-
 
 BOT_NAME = "baseSpider"
 

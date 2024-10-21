@@ -121,7 +121,7 @@ class BaseHeaderMiddleware:
             print('User-Agent:', UserAgent().random)
             request.headers['User-Agent'] = UserAgent().random
 
-        print('User-Agent:', UserAgent().random)
+        print('User-Agent:', '已添加')
         
         return None
 
