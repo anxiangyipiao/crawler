@@ -2,6 +2,5 @@ fake_useragent
 playwright
 mmh3
 redis
-math
 ddddocr
 requests

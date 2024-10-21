@@ -9,6 +9,5 @@ Requires-Dist: fake_useragent
 Requires-Dist: playwright
 Requires-Dist: mmh3
 Requires-Dist: redis
-Requires-Dist: math
 Requires-Dist: ddddocr
 Requires-Dist: requests

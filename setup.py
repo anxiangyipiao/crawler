@@ -16,7 +16,6 @@ setup(
         'playwright',
         'mmh3',
         'redis',
-        'math',
         'ddddocr',
         'requests',
     ],
