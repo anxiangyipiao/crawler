@@ -1,8 +1,7 @@
-from baseSpider.baseSpider import BaseSpider,RequestItem
-
+from baseSpider.baseSpider import BaseSpiderObject, RequestItem
 
 # 数据量大
-class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpider):
+class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "sizebid_zhaobiao"
     start_urls = 'http://m.sizebid.com/bid-information/{page}.html?fuzzySearch=false'

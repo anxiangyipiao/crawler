@@ -1,8 +1,8 @@
 
-from baseSpider.baseSpider import BaseSpider,RequestItem
+from baseSpider.baseSpider import BaseSpiderObject, RequestItem
 
 # 建设工程
-class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpider):
+class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "zybtp_zhaobiao"
     start_urls = [

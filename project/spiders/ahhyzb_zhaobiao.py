@@ -1,7 +1,7 @@
 import time
-from baseSpider.baseSpider import BaseSpider,RequestItem
+from baseSpider.baseSpider import BaseSpiderObject, RequestItem
 
-class ahhyzb(BaseSpider):
+class ahhyzb(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "ahhyzb_zhaobiao"
     start_urls = [
