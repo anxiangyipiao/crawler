@@ -11,7 +11,7 @@ from baseSpider.items import BaseItem
 from baseSpider.utils.RedisManage import RedisConnectionManager
 
 
-class BasePipeline:
+class baseSpiderPipeline:
 
     def __init__(self) -> None:
         
