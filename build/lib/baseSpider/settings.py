@@ -56,6 +56,7 @@ DOWNLOAD_DELAY = 2
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+
 DOWNLOADER_MIDDLEWARES = {
    "baseSpider.middlewares.BaseDownloaderMiddleware": 543, 
    "baseSpider.middlewares.BaseHeaderMiddleware": 1, # 添加请求头
@@ -79,7 +80,7 @@ RETRY_TIMES = 2 # 最大重试次数
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "baseSpider.pipelines.BasePipeline": 300,
+   "baseSpider.pipelines.baseSpiderPipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
