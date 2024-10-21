@@ -1,11 +1,10 @@
 import json
-import os
 from scrapy.exceptions import CloseSpider
 import scrapy
-from base.utils.BloomFilter import bloomFilter
-from base.utils.RedisManage import RedisConnectionManager
+from baseSpider.utils.BloomFilter import bloomFilter
+from baseSpider.utils.RedisManage import RedisConnectionManager
 from datetime import datetime
-from base.items import BaseItem,RequestItem
+from baseSpider.items import BaseItem,RequestItem
 from scrapy import signals
 import logging
 import re
@@ -13,7 +12,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
-class BaseListSpider(scrapy.Spider):
+class BaseSpider(scrapy.Spider):
 
     name = "base"
     start_urls = []

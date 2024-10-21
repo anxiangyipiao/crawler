@@ -8,8 +8,8 @@
 import json
 from itemadapter import ItemAdapter
 from .items import BaseItem
-from base.utils.RedisManage import RedisConnectionManager
-import os
+from baseSpider.utils.RedisManage import RedisConnectionManager
+
 
 class BasePipeline:
 

@@ -1,9 +1,9 @@
 import time
 from urllib.parse import urlencode
-from .base import BaseListSpider,RequestItem
+from .base import BaseSpider,RequestItem
 
 # 建设工程
-class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseListSpider):
+class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpider):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "zybtp_zhaobiao"
     start_urls = [
