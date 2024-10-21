@@ -13,7 +13,7 @@ SPIDER_MODULES = ["project.spiders"]
 NEWSPIDER_MODULE = "project.spiders"
 
 
-# LOG_LEVEL = "DEBUG"
+LOG_LEVEL = "DEBUG"
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "project (+http://www.yourdomain.com)"
