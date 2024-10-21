@@ -12,7 +12,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
-class BaseSpider(scrapy.Spider):
+class BaseSpiderObject(scrapy.Spider):
 
     name = "base"
     start_urls = []

@@ -1,8 +1,7 @@
 Metadata-Version: 2.1
 Name: baseSpider
-Version: 1.0.0
+Version: 1.0.1
 Summary: Base spider needed by all other spiders overfall.
-Home-page: https://github.com/eastonliu/Python-Guide-CN
 Author: EastonLee
 Author-email: appelapp2017@outlook.com
 Requires-Dist: fake_useragent

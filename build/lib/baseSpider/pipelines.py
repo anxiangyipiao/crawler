@@ -7,7 +7,7 @@
 # useful for handling different item types with a single interface
 import json
 from itemadapter import ItemAdapter
-from .items import BaseItem
+from baseSpider.items import BaseItem
 from baseSpider.utils.RedisManage import RedisConnectionManager
 
 
@@ -28,7 +28,11 @@ class BasePipeline:
         
             # 更新标识
             self.calculate_flag(item, spider)
-       
+
+
+        else:
+            print("不是BaseItem")
+
         return item
     
 
@@ -49,7 +53,7 @@ class BasePipeline:
         # 将item转换为字典
         item_dict = dict(item)
         # 将item_dict转换为json字符串
-        item_json = json.dumps(item_dict, ensure_ascii=False)
+        item_json = json.dumps(item_dict)
         # 将item_json存入redis
         self.redis.lpush('result', item_json)
 

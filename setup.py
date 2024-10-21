@@ -5,11 +5,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='baseSpider',
-    version='1.0.0',
+    version='1.0.1',
     description='Base spider needed by all other spiders overfall.',
     author='EastonLee',
     author_email='appelapp2017@outlook.com',
-    url='https://github.com/eastonliu/Python-Guide-CN',
     packages=find_packages(),
     install_requires=[
         'fake_useragent',
