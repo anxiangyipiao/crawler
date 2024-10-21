@@ -43,25 +43,17 @@ class BaseSpiderObject(scrapy.Spider):
 
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
    
-    '''# @classmethod
-    # def from_crawler(cls, crawler, *args, **kwargs):
-    #     """
-    #     从 Crawler 创建 spider 实例，并连接信号处理器。
-        
-    #     Args:
-    #         cls (type): Spider 的类对象。
-    #         crawler (Crawler): Scrapy 引擎的 Crawler 实例。
-        
-    #     Returns:
-    #         BaseSpider: 创建的 Spider 实例。
-    #     """
-    #     spider = super(BaseSpider, cls).from_crawler(crawler, *args, **kwargs)
-    #     crawler.signals.connect(spider.closed, signal=signals.spider_closed)
-    #     return spider
-    '''
+
+    custom_settings = {
+        'ITEM_PIPELINES': {
+          "baseSpider.pipelines.baseSpiderPipeline": 300,
+        }
+    }
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
 
@@ -488,7 +480,6 @@ class BaseSpiderObject(scrapy.Spider):
             f"crawl_count: {data['crawl_count']}\n"
         )
         
-
     # 爬虫关闭时调用
     def closed(self, reason):
             # 插入任务日志
