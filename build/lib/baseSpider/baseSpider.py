@@ -48,38 +48,49 @@ class BaseSpiderObject(scrapy.Spider):
 
     # 定义要覆盖或添加的设置
     overrides = {
-        'DOWNLOAD_DELAY': 2,  # 覆盖下载延迟设置
-        'CONCURRENT_REQUESTS_PER_DOMAIN': 16  # 覆盖每个域名的并发请求数量
     }
 
-    # 使用辅助函数加载设置
     custom_settings = None
     
 
     def __init__(self, *args, **kwargs):
+        super(BaseSpiderObject, self).__init__(*args, **kwargs)
+        self.custom_settings = self.load_custom_settings()
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
 
     def load_custom_settings(self):
+    
+        
+        dict = {
 
-        custom_settings = {
+                'DOWNLOADER_MIDDLEWARES': {
+                    "baseSpider.middlewares.BaseDownloaderMiddleware": 543, 
+                    "baseSpider.middlewares.BaseHeaderMiddleware": 1, # 添加请求头
+                    "baseSpider.middlewares.PlaywrightMiddleware": 2, # 使用playwright渲染页面
+                },
+                'ITEM_PIPELINES': {
+                    'base_project.pipelines.BasePipeline': 300, # 数据处理管道
+                },
+                'ROBOTSTXT_OBEY' : False,
+                'DOWNLOAD_DELAY': 2,
+                'CONCURRENT_REQUESTS_PER_DOMAIN': 16,
+                'CONCURRENT_REQUESTS_PER_IP' : 10,
+                'RETRY_ENABLED' : True,
+                'RETRY_TIMES': 2,
 
-            'DOWNLOADER_MIDDLEWARES': {
-                "baseSpider.middlewares.BaseDownloaderMiddleware": 543, 
-                "baseSpider.middlewares.BaseHeaderMiddleware": 1, # 添加请求头
-                "baseSpider.middlewares.PlaywrightMiddleware": 2, # 使用playwright渲染页面
-            },
-            'ITEM_PIPELINES': {
-                'base_project.pipelines.BasePipeline': 300, # 数据处理管道
-            },
-            'ROBOTSTXT_OBEY' : False,
-            'DOWNLOAD_DELAY': 2,
-            'CONCURRENT_REQUESTS_PER_DOMAIN': 16,
-            'CONCURRENT_REQUESTS_PER_IP' : 10,
-            'RETRY_ENABLED' : True,
-            'RETRY_TIMES': 2,
-            
+
         }
+
+        if self.overrides is not None:
+
+            custom_settings = {
+                **self.overrides,
+                **dict           
+            }
+
+        else:
+             custom_settings = dict
 
         return custom_settings
 
