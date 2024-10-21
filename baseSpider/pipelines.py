@@ -21,7 +21,6 @@ class baseSpiderPipeline:
     def process_item(self, item, spider):
         
 
-        print("开始处理item")
         # 判断是否是BaseItem的实例
         if isinstance(item, BaseItem):
             

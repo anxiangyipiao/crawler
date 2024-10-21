@@ -73,8 +73,6 @@ class BaseSpiderObject(scrapy.Spider):
         logger.info(f'Spider {self.name} started and added to running queue.')
 
   
-
-   
     def get_base_item(self)->BaseItem:
         """
         返回一个包含基本信息的 BaseItem 对象。
