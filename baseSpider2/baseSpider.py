@@ -1,10 +1,10 @@
 import json
 from scrapy.exceptions import CloseSpider
 import scrapy
-from baseSpider.utils.BloomFilter import bloomFilter
-from baseSpider.utils.RedisManage import RedisConnectionManager
+from baseSpider2.utils.BloomFilter import bloomFilter
+from baseSpider2.utils.RedisManage import RedisConnectionManager
 from datetime import datetime
-from baseSpider.items import BaseItem,RequestItem
+from baseSpider2.items import BaseItem,RequestItem
 from scrapy import signals
 import logging
 import re

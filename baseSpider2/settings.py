@@ -7,10 +7,10 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "baseSpider"
+BOT_NAME = "baseSpider2"
 
-SPIDER_MODULES = ["baseSpider.spiders"]
-NEWSPIDER_MODULE = "baseSpider.spiders"
+SPIDER_MODULES = ["baseSpider2.spiders"]
+NEWSPIDER_MODULE = "baseSpider2.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -57,9 +57,9 @@ DOWNLOAD_DELAY = 2
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   "baseSpider.middlewares.BaseDownloaderMiddleware": 543, 
-   "baseSpider.middlewares.BaseHeaderMiddleware": 1, # 添加请求头
-   "baseSpider.middlewares.PlaywrightMiddleware": 2, # 使用playwright渲染页面
+   "baseSpider2.middlewares.BaseDownloaderMiddleware": 543, 
+   "baseSpider2.middlewares.BaseHeaderMiddleware": 1, # 添加请求头
+   "baseSpider2.middlewares.PlaywrightMiddleware": 2, # 使用playwright渲染页面
    # "base.middlewares.BaseRetryMiddleware": 2, # 重试
 
 }
@@ -79,7 +79,7 @@ RETRY_TIMES = 2 # 最大重试次数
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "baseSpider.pipelines.BasePipeline": 300,
+   "baseSpider2.pipelines.BasePipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

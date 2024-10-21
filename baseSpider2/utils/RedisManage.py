@@ -1,7 +1,7 @@
 # This file is used to manage the connection to the Redis database. It is a singleton class that creates a connection pool
 import redis
 from redis import ConnectionPool
-from baseSpider.settings import REDIS_DB, REDIS_HOST, REDIS_PORT
+from baseSpider2.settings import REDIS_DB, REDIS_HOST, REDIS_PORT
 
 
 class RedisConnectionManager:

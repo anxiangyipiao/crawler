@@ -1,4 +1,4 @@
-import time
+
 from baseSpider.baseSpider import BaseSpider,RequestItem
 
 
@@ -18,7 +18,7 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpider):
     source = 'm.sizebid.com'
 
 
-    max_page = 10  # 必填，最大页数
+    # max_page = 10  # 必填，最大页数
 
    
     def start_requests(self):

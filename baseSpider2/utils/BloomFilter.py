@@ -1,8 +1,8 @@
 # Desc: 布隆过滤器
 import mmh3
 import math
-from baseSpider.settings import BLOOMFILTER_KEY
-from baseSpider.utils.RedisManage import RedisConnectionManager
+from baseSpider2.settings import BLOOMFILTER_KEY
+from baseSpider2.utils.RedisManage import RedisConnectionManager
 from datetime import datetime
 
 
