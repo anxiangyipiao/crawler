@@ -74,3 +74,4 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         # 翻页
         self.request_next_page(baseItem, page, request_params)
              
+  
