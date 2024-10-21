@@ -28,7 +28,11 @@ class BasePipeline:
         
             # 更新标识
             self.calculate_flag(item, spider)
-       
+
+
+        else:
+            print("不是BaseItem")
+            
         return item
     
 
