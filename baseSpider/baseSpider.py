@@ -8,7 +8,7 @@ from baseSpider.items import BaseItem,RequestItem
 from scrapy import signals
 import logging
 import re
-from scrapy.utils.project import get_project_settings
+from baseSpider.utils.Ocr import load_custom_settings
 
 
 
@@ -46,29 +46,20 @@ class BaseSpiderObject(scrapy.Spider):
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
     
 
-    custom_settings = None # 自定义设置
+    # 定义要覆盖或添加的设置
+    overrides = {
+        'DOWNLOAD_DELAY': 2,  # 覆盖下载延迟设置
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 16  # 覆盖每个域名的并发请求数量
+    }
+
+    # 使用辅助函数加载设置
+    custom_settings = load_custom_settings(overrides)
     
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.custom_settings = self.load_custom_settings()
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
 
-
-    def load_custom_settings(self):
-        """
-        加载项目的设置，并允许覆盖或添加新的设置。
-        :return: 合并后的设置字典
-        """
-    
-        # 获取项目的设置
-        project_settings = get_project_settings()
-
-        # 将项目的设置与覆盖设置合并
-        custom_settings = {**project_settings}
-
-        return custom_settings
    
     def get_base_item(self)->BaseItem:
         """
