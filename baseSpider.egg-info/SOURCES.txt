@@ -1,6 +1,5 @@
 setup.py
 baseSpider/__init__.py
-baseSpider/baseSpider.py
 baseSpider/items.py
 baseSpider/middlewares.py
 baseSpider/pipelines.py
@@ -10,6 +9,8 @@ baseSpider.egg-info/SOURCES.txt
 baseSpider.egg-info/dependency_links.txt
 baseSpider.egg-info/requires.txt
 baseSpider.egg-info/top_level.txt
+baseSpider/spider/__init__.py
+baseSpider/spider/baseSpider.py
 baseSpider/utils/BloomFilter.py
 baseSpider/utils/Ocr.py
 baseSpider/utils/RedisManage.py
