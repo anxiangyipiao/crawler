@@ -76,6 +76,6 @@ class ahhyzb(BaseSpiderObject):
                     'params': None
                 }
         # 翻页
-        self.request_next_page(baseItem, page, request_params)
+        yield self.request_next_page(baseItem, page, request_params)
         
 
