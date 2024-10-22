@@ -3,6 +3,7 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import sys
 from scrapy import signals
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -13,7 +14,8 @@ from scrapy.http import HtmlResponse
 from scrapy.utils.defer import deferred_from_coro
 from scrapy.exceptions import IgnoreRequest
 from playwright.async_api import async_playwright
-
+import asyncio
+import platform
 
 logger = logging.getLogger(__name__)
 
@@ -124,12 +126,12 @@ class BaseHeaderMiddleware:
 
 
 class PlaywrightMiddleware:
-   
+
     async def _process_request(self, request, spider):
         
         if not request.meta.get('use_playwright'):
             return None
-        
+
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)  # 无头模式
             page = await browser.new_page()
