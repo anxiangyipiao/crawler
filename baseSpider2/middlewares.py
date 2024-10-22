@@ -12,10 +12,32 @@ from scrapy.downloadermiddlewares.retry import RetryMiddleware
 import logging
 from scrapy.http import HtmlResponse
 import sys
-from twisted.internet.threads import deferToThread
-from playwright.sync_api import sync_playwright
+import asyncio
+from twisted.internet.asyncioreactor import AsyncioSelectorReactor
+import twisted.internet
+from playwright.async_api import async_playwright
+from twisted.internet.defer import Deferred
+
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+reactor = AsyncioSelectorReactor(asyncio.get_event_loop())
+
+# install AsyncioSelectorReactor
+twisted.internet.reactor = reactor
+sys.modules['twisted.internet.reactor'] = reactor
+
 
 logger = logging.getLogger(__name__)
+
+
+def as_deferred(f):
+    """
+    transform a Twisted Deffered to an Asyncio Future
+    :param f: async function
+    """
+    return Deferred.fromFuture(asyncio.ensure_future(f))
 
 
 class BaseSpiderMiddleware:
@@ -123,41 +145,16 @@ class BaseHeaderMiddleware:
         return None
 
 
-# class PlaywrightMiddleware:
-
-#     async def _process_request(self, request, spider):
-        
-#         if not request.meta.get('use_playwright'):
-#             return None
-
-#         async with async_playwright() as p:
-#             browser = await p.chromium.launch(headless=True)  # 无头模式
-#             page = await browser.new_page()
-#             await page.goto(request.url)
-#             content = await page.content()
-#             await browser.close()
-
-#             return HtmlResponse(
-#                 request.url,
-#                 body=content.encode('utf-8'), 
-#                 encoding='utf-8',
-#                 request=request
-#             )
-
-#     def process_request(self, request, spider):
-#         return deferred_from_coro(self._process_request(request, spider))
-
-
 class PlaywrightMiddleware:
 
-    def _process_request_sync(self, request, spider):
+    async def _process_request(self, request, spider):
         
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)  # 无头模式
-            page = browser.new_page()
-            page.goto(request.url)
-            content = page.content()
-            browser.close()
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)  # 无头模式
+            page = await browser.new_page()
+            await page.goto(request.url)
+            content = await page.content()
+            await browser.close()
 
             return HtmlResponse(
                 request.url,
@@ -167,12 +164,11 @@ class PlaywrightMiddleware:
             )
 
     def process_request(self, request, spider):
+
         if not request.meta.get('use_playwright'):
             return None
-
-        d = deferToThread(self._process_request_sync, request, spider)
-        return d
-
+        
+        return as_deferred(self._process_request(request, spider))
 
 
 
