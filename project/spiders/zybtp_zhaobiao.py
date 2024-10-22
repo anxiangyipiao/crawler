@@ -1,17 +1,16 @@
 
-from baseSpider.baseSpider import BaseSpiderObject, RequestItem
+from baseSpider.baseSpider import BaseSpiderObject,RequestItem
 
 # 建设工程
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "zybtp_zhaobiao"
     start_urls = [
-        'https://www.zybtp.com/gcggg/index_{page}.jhtml',
-        # 'https://www.zybtp.com/hcggg/index_{page}.jhtml',
+        # 'https://www.zybtp.com/gcggg/index_{page}.jhtml',
+        'https://www.zybtp.com/hcggg/index_{page}.jhtml',
     ]
     
     contents_base_urls = ''  # 用于拼接详情页网址
-
     province = "山东省"  # 必填，爬虫省份
     city = "济南市"  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
@@ -74,3 +73,4 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         # 翻页
         self.request_next_page(baseItem, page, request_params)
              
+  

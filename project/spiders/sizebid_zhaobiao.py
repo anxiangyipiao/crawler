@@ -1,4 +1,5 @@
-from baseSpider.baseSpider import BaseSpiderObject, RequestItem
+from baseSpider.baseSpider import BaseSpiderObject,RequestItem
+
 
 # 数据量大
 class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpiderObject):

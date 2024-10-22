@@ -52,9 +52,9 @@ NEWSPIDER_MODULE = "project.spiders"
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    "project.middlewares.ProjectDownloaderMiddleware": 543,
-#}
+# DOWNLOADER_MIDDLEWARES = {
+# #    "project.middlewares.ProjectDownloaderMiddleware": 543,
+# }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -64,6 +64,7 @@ NEWSPIDER_MODULE = "project.spiders"
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+
 # ITEM_PIPELINES = {
 #    "project.pipelines.ProjectPipeline": 300,
 # }
@@ -90,6 +91,6 @@ NEWSPIDER_MODULE = "project.spiders"
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
-REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
-TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
-FEED_EXPORT_ENCODING = "utf-8"
+# REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
+# TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+# FEED_EXPORT_ENCODING = "utf-8"
