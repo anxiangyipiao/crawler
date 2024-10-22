@@ -65,6 +65,7 @@ class BaseSpiderObject(scrapy.Spider):
             'RETRY_ENABLED': True,
             'RETRY_TIMES': 2,
             'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
+            'LOG_LEVEL':'ERROR',
     }
     
 

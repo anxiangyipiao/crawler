@@ -20,6 +20,7 @@ NEWSPIDER_MODULE = "baseSpider.spiders"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+LOG_LEVEL = 'ERROR'  # 输出日志
 
 # 设置每个域名的最大并发请求数量
 CONCURRENT_REQUESTS_PER_DOMAIN = 10
