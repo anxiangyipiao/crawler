@@ -21,7 +21,7 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpiderObject):
         for url in self.start_urls:
             
             time.sleep(1)
-            urls = url.format(page=1)
+            urls = url.format(page = 1)
             
             # 设置请求参数
             request_params = {
@@ -84,6 +84,6 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpiderObject):
                     'params': None
                 }
         # 翻页
-        self.request_next_page(baseItem, page, request_params)
+        yield self.request_next_page(baseItem, page, request_params)
         
 
