@@ -6,7 +6,7 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpiderObject):
     name = "Pindingshan"
     start_urls = [
          "http://ggzy.pds.gov.cn/zzbgg/index_{page}.jhtml",
-        'http://ggzy.pds.gov.cn/gzbgg/index_{page}.jhtml',
+        # 'http://ggzy.pds.gov.cn/gzbgg/index_{page}.jhtml',
     ]
     
     next_base_urls = ''  # 用于下一页网址拼接
