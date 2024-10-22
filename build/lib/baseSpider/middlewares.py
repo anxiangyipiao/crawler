@@ -118,7 +118,6 @@ class BaseHeaderMiddleware:
 
         if request.headers.get('User-Agent') is None or "Scrapy" in request.headers.get('User-Agent').decode():
             
-            print('User-Agent:', UserAgent().random)
             request.headers['User-Agent'] = UserAgent().random
    
         return None
