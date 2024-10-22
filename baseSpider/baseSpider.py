@@ -64,6 +64,7 @@ class BaseSpiderObject(scrapy.Spider):
             'CONCURRENT_REQUESTS_PER_IP': 10,
             'RETRY_ENABLED': True,
             'RETRY_TIMES': 2,
+            'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
     }
     
 
