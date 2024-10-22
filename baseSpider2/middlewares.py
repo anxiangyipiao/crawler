@@ -11,11 +11,9 @@ from fake_useragent import UserAgent
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 import logging
 from scrapy.http import HtmlResponse
-from scrapy.utils.defer import deferred_from_coro
-from scrapy.exceptions import IgnoreRequest
-from playwright.async_api import async_playwright
-import asyncio
-import platform
+import sys
+from twisted.internet.threads import deferToThread
+from playwright.sync_api import sync_playwright
 
 logger = logging.getLogger(__name__)
 
@@ -125,19 +123,41 @@ class BaseHeaderMiddleware:
         return None
 
 
+# class PlaywrightMiddleware:
+
+#     async def _process_request(self, request, spider):
+        
+#         if not request.meta.get('use_playwright'):
+#             return None
+
+#         async with async_playwright() as p:
+#             browser = await p.chromium.launch(headless=True)  # 无头模式
+#             page = await browser.new_page()
+#             await page.goto(request.url)
+#             content = await page.content()
+#             await browser.close()
+
+#             return HtmlResponse(
+#                 request.url,
+#                 body=content.encode('utf-8'), 
+#                 encoding='utf-8',
+#                 request=request
+#             )
+
+#     def process_request(self, request, spider):
+#         return deferred_from_coro(self._process_request(request, spider))
+
+
 class PlaywrightMiddleware:
 
-    async def _process_request(self, request, spider):
+    def _process_request_sync(self, request, spider):
         
-        if not request.meta.get('use_playwright'):
-            return None
-
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)  # 无头模式
-            page = await browser.new_page()
-            await page.goto(request.url)
-            content = await page.content()
-            await browser.close()
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)  # 无头模式
+            page = browser.new_page()
+            page.goto(request.url)
+            content = page.content()
+            browser.close()
 
             return HtmlResponse(
                 request.url,
@@ -147,7 +167,13 @@ class PlaywrightMiddleware:
             )
 
     def process_request(self, request, spider):
-        return deferred_from_coro(self._process_request(request, spider))
+        if not request.meta.get('use_playwright'):
+            return None
+
+        d = deferToThread(self._process_request_sync, request, spider)
+        return d
+
+
 
 
 class BaseRetryMiddleware(RetryMiddleware):
