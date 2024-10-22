@@ -9,7 +9,7 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpiderObject):
     ]
     
     next_base_urls = ''  # 用于下一页网址拼接
-    contents_base_urls = 'https://www.dz100.com/gat/gateway/bidHall-info?id={id}'  # 用于拼接详情页网址
+    contents_base_urls = '  https://api.dz100.com/bid/bidding/info/home/detail?id={id}'  # 用于拼接详情页网址
     province = ""  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
@@ -55,10 +55,10 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpiderObject):
             else:
                 baseItem['url'] = self.contents_base_urls.format(id=node['id'])
             
-            baseItem['origin_url'] = 'https://api.dz100.com/bid/bidding/info/home/detail?id={id}'.format(id=node['id'])
+            baseItem['origin_url'] = 'https://www.dz100.com/gat/gateway/bidHall-info?id={id}'.format(id=node['id'])
 
             request_params = {
-                'url': baseItem['origin_url'],
+                'url': baseItem['url'],
                 'meta': {'item': baseItem},
                 'callback': self.parse_content_detal,
                 'errback': self.errback_httpbin,
