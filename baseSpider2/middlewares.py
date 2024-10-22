@@ -13,20 +13,8 @@ import logging
 from scrapy.http import HtmlResponse
 import sys
 import asyncio
-from twisted.internet.asyncioreactor import AsyncioSelectorReactor
-import twisted.internet
 from playwright.async_api import async_playwright
 from twisted.internet.defer import Deferred
-
-
-if sys.platform == 'win32':
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-reactor = AsyncioSelectorReactor(asyncio.get_event_loop())
-
-# install AsyncioSelectorReactor
-twisted.internet.reactor = reactor
-sys.modules['twisted.internet.reactor'] = reactor
 
 
 logger = logging.getLogger(__name__)
@@ -169,7 +157,6 @@ class PlaywrightMiddleware:
             return None
         
         return as_deferred(self._process_request(request, spider))
-
 
 
 class BaseRetryMiddleware(RetryMiddleware):

@@ -29,7 +29,7 @@ class Henan_Pindingshan_ggzy_zhaobiaoSpider(BaseSpider):
                 'request_body': None,
                 'url': full_url,
                 'method': 'GET',
-                'meta': {'page': 1, 'param': url,'use_playwright': True},
+                'meta': {'page': 1, 'param': url, "playwright": True},
                 'callback': self.parse,
                 'cookies': None,
                 'headers': None,

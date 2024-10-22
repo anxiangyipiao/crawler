@@ -64,7 +64,6 @@ DOWNLOADER_MIDDLEWARES = {
 
 }
 
-
 RETRY_ENABLED = True  # 启用重试
 RETRY_TIMES = 2 # 最大重试次数
 # RETRY_HTTP_CODES = [500, 502, 503, 504, 400, 403, 404, 408]  # 需要重试的HTTP状态码
