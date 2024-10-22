@@ -485,7 +485,7 @@ class BaseSpiderObject(scrapy.Spider):
 
     def log_info(self,data):
          # 输出日志
-        logger.info(
+        logger.error(
             f"\nthis_time_all_request: { data['this_time_all_request']}, \n" 
             f"this_time_success_request: {data['this_time_success_request']},\n"
             f"this_time_fail_request: {data['this_time_fail_request']},\n"
