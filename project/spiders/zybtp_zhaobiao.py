@@ -8,6 +8,9 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     start_urls = [
         'https://www.zybtp.com/gcggg/index_{page}.jhtml',
         'https://www.zybtp.com/hcggg/index_{page}.jhtml',
+        # 'https://www.zybtp.com/gczb/index_{page}.jhtml',
+        # 'https://www.zybtp.com/hwzb/index_{page}.jhtml',
+        # 'https://www.zybtp.com/fwzb/index_{page}.jhtml'
     ]
     
     contents_base_urls = ''  # 用于拼接详情页网址
