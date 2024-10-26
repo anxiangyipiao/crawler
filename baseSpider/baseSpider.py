@@ -33,8 +33,7 @@ class BaseSpiderObject(scrapy.Spider):
     insertCount = 0 # 总任务数量
     successCount = 0 # 成功数量
 
-    # insert_urls = [] # 插入的url
-    # success_urls = [] # 成功的url
+
     failed_urls = [] # 失败的url
 
     max_page = 10 # 最大页数
