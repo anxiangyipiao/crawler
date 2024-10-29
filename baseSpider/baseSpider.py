@@ -10,8 +10,6 @@ import logging
 import re
 
 
-
-
 logger = logging.getLogger(__name__)
 
 class BaseSpiderObject(scrapy.Spider):
@@ -69,8 +67,8 @@ class BaseSpiderObject(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(BaseSpiderObject, self).__init__(*args, **kwargs)
-        self.task_redis_server.rpush('running_spiders', self.name)
-        logger.info(f'Spider {self.name} started and added to running queue.')
+        # self.task_redis_server.rpush('running_spiders', self.name)
+        # logger.info(f'Spider {self.name} started and added to running queue.')
 
   
     def get_base_item(self)->BaseItem:
@@ -478,8 +476,8 @@ class BaseSpiderObject(scrapy.Spider):
         self.log_info(data)
 
 
-        # 清空任务数量
-        self.task_redis_server.lrem('running_spiders', 0, self.name)
+        # # 清空任务数量
+        # self.task_redis_server.lrem('running_spiders', 0, self.name)
 
     def log_info(self,data):
          # 输出日志
