@@ -10,8 +10,6 @@ import logging
 import re
 
 
-
-
 logger = logging.getLogger(__name__)
 
 class BaseSpiderObject(scrapy.Spider):
@@ -33,8 +31,7 @@ class BaseSpiderObject(scrapy.Spider):
     insertCount = 0 # 总任务数量
     successCount = 0 # 成功数量
 
-    # insert_urls = [] # 插入的url
-    # success_urls = [] # 成功的url
+
     failed_urls = [] # 失败的url
 
     max_page = 10 # 最大页数
@@ -60,17 +57,18 @@ class BaseSpiderObject(scrapy.Spider):
             },
             'ROBOTSTXT_OBEY': False,
             'DOWNLOAD_DELAY': 2,
-            'CONCURRENT_REQUESTS_PER_DOMAIN': 10,
-            'CONCURRENT_REQUESTS_PER_IP': 10,
+            'CONCURRENT_REQUESTS_PER_IP': 8,
             'RETRY_ENABLED': True,
             'RETRY_TIMES': 2,
+            'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
+            'LOG_LEVEL':'ERROR',
     }
     
 
     def __init__(self, *args, **kwargs):
         super(BaseSpiderObject, self).__init__(*args, **kwargs)
-        self.task_redis_server.rpush('running_spiders', self.name)
-        logger.info(f'Spider {self.name} started and added to running queue.')
+        # self.task_redis_server.rpush('running_spiders', self.name)
+        # logger.info(f'Spider {self.name} started and added to running queue.')
 
   
     def get_base_item(self)->BaseItem:
@@ -346,7 +344,7 @@ class BaseSpiderObject(scrapy.Spider):
             logger.error("Insert time queue error")
 
     def get_key(self):
-        return  "task_log:" + self.source + ":" + self.crawl_today.strftime('%Y-%m-%d') + ":" + self.name
+        return  "task_log:" + self.crawl_today.strftime('%Y-%m-%d') + ":"  + self.source + ":" + self.name
 
     def init_source_log(self,key):
        
@@ -478,12 +476,12 @@ class BaseSpiderObject(scrapy.Spider):
         self.log_info(data)
 
 
-        # 清空任务数量
-        self.task_redis_server.lrem('running_spiders', 0, self.name)
+        # # 清空任务数量
+        # self.task_redis_server.lrem('running_spiders', 0, self.name)
 
     def log_info(self,data):
          # 输出日志
-        logger.info(
+        logger.error(
             f"\nthis_time_all_request: { data['this_time_all_request']}, \n" 
             f"this_time_success_request: {data['this_time_success_request']},\n"
             f"this_time_fail_request: {data['this_time_fail_request']},\n"

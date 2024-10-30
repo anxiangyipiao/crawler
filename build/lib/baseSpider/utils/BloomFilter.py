@@ -5,7 +5,6 @@ from baseSpider.settings import BLOOMFILTER_KEY
 from baseSpider.utils.RedisManage import RedisConnectionManager
 from datetime import datetime
 
-
 from functools import lru_cache
 
 # 常量定义

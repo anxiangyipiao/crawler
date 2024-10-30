@@ -344,7 +344,7 @@ class BaseSpiderObject(scrapy.Spider):
             logger.error("Insert time queue error")
 
     def get_key(self):
-        return  "task_log:" + self.source + ":" + self.crawl_today.strftime('%Y-%m-%d') + ":" + self.name
+        return  "task_log:" + self.crawl_today.strftime('%Y-%m-%d') + ":"  + self.source + ":" + self.name
 
     def init_source_log(self,key):
        
