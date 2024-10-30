@@ -377,15 +377,20 @@ class BaseSpiderObject(scrapy.Spider):
             'failed_urls': json.dumps([])
         }
 
-        # hash 结构存储
-
+        # zadd 结构存储
         if not self.task_redis_server.exists(key):
+            score = datetime.now().timestamp()
+            
+            self.task_redis_server.zadd(key, {data: score})
+
+        # if not self.task_redis_server.exists(key):
                 
-            self.task_redis_server.hmset(key, data)
+        #     self.task_redis_server.hmset(key, data)
        
     def read_source_log(self,key):
 
-        data = self.task_redis_server.hgetall(key)
+        # data = self.task_redis_server.hgetall(key)
+        data = self.task_redis_server.zrange(key, 0, -1, withscores=True)
 
         # 转为字典
         return {
@@ -408,7 +413,8 @@ class BaseSpiderObject(scrapy.Spider):
     def write_source_log(self,key,data:dict):
         
         data['failed_urls'] = json.dumps(data['failed_urls'])
-        self.task_redis_server.hmset(key, data)
+        score = datetime.now().timestamp()
+        self.task_redis_server.zadd(key, {data: score})
 
     def insert_task_log(self):
         """
