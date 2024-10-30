@@ -361,7 +361,10 @@ class BaseSpiderObject(scrapy.Spider):
         # key 为 source + 日期
 
         data = {
-            'time': self.crawl_today.strftime('%Y-%m-%d'),
+            'name': self.name,
+            'source': self.source,
+            'site_name': self.site_name,
+            'time': self.crawl_today.strftime('%Y-%m-%d %H:%M:%S'),
             'today_all_request': 0,
             'today_success_request': 0,
             'today_fail_request': 0,
@@ -380,12 +383,16 @@ class BaseSpiderObject(scrapy.Spider):
                 
             self.task_redis_server.hmset(key, data)
        
+
     def read_source_log(self,key):
 
         data = self.task_redis_server.hgetall(key)
 
         # 转为字典
         return {
+            'name': data[b'name'].decode('utf-8'),
+            'source': data[b'source'].decode('utf-8'),
+            'site_name': data[b'site_name'].decode('utf-8'),
             'time': data[b'time'].decode('utf-8'),
             'today_all_request': int(data[b'today_all_request'].decode('utf-8')),
             'today_success_request': int(data[b'today_success_request'].decode('utf-8')),
