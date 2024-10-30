@@ -20,6 +20,7 @@ NEWSPIDER_MODULE = "baseSpider.spiders"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+LOG_LEVEL = 'ERROR'  # 输出日志
 
 # 设置每个域名的最大并发请求数量
 CONCURRENT_REQUESTS_PER_DOMAIN = 10
@@ -112,8 +113,11 @@ FEED_EXPORT_ENCODING = "utf-8"
 
 
 # redis
-REDIS_HOST = "43.128.136.204"
-REDIS_PORT = 16379
+# REDIS_HOST = "43.128.136.204"
+# REDIS_PORT = 16379
+# REDIS_DB = 0
+REDIS_HOST = "127.0.0.1"
+REDIS_PORT = 6379
 REDIS_DB = 0
 
 # rabbitmq
