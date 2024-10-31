@@ -382,11 +382,6 @@ class BaseSpiderObject(scrapy.Spider):
             # 存储数据 
             self.task_redis_server.hmset(key, data)
 
-            # # # 对数据进行排序    
-            # score = 0
-            # self.task_redis_server.zadd('key_sorted_set', {key: score})
-
-
 
     def read_source_log(self,key):
 
