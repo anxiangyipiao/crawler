@@ -382,10 +382,7 @@ class BaseSpiderObject(scrapy.Spider):
             # 存储数据 
             self.task_redis_server.hmset(key, data)
 
-            # # # 对数据进行排序    
-            # score = 0
-            # self.task_redis_server.zadd('key_sorted_set', {key: score})
-  
+
     def read_source_log(self,key):
 
         data = self.task_redis_server.hgetall(key)
@@ -415,9 +412,21 @@ class BaseSpiderObject(scrapy.Spider):
         # 存储数据
         self.task_redis_server.hmset(key, data)
 
-        # 对数据进行排序,更新key的分数,分数为时间戳,
+        # 对数据进行排序,更新key的分数,分数为时间戳
         score = datetime.now().timestamp()
-        self.task_redis_server.zadd('key_sorted_set', {key: score},xx=True)
+
+        if self.check_member_exists(key):
+            self.task_redis_server.zadd('key_sorted_set', {key: score},xx=True)
+        else:
+            self.task_redis_server.zadd('key_sorted_set', {key: score})
+
+    def check_member_exists(self, key):
+        # 检查成员是否存在于有序集合中
+        score = self.task_redis_server.zscore('key_sorted_set', key)
+        if score is not None:
+            return True
+        else:
+            return False
 
     def insert_task_log(self):
         """
@@ -497,6 +506,10 @@ class BaseSpiderObject(scrapy.Spider):
     def log_info(self,data):
          # 输出日志
         logger.error(
+            f"\nname: {data['name']}, \n"
+            f"source: {data['source']}, \n"
+            f"site_name: {data['site_name']}, \n"
+            f"time: {data['time']}, \n"
             f"\nthis_time_all_request: { data['this_time_all_request']}, \n" 
             f"this_time_success_request: {data['this_time_success_request']},\n"
             f"this_time_fail_request: {data['this_time_fail_request']},\n"
