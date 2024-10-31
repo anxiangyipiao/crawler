@@ -510,7 +510,7 @@ class BaseSpiderObject(scrapy.Spider):
             f"source: {data['source']}, \n"
             f"site_name: {data['site_name']}, \n"
             f"time: {data['time']}, \n"
-            f"\nthis_time_all_request: { data['this_time_all_request']}, \n" 
+            f"this_time_all_request: { data['this_time_all_request']}, \n" 
             f"this_time_success_request: {data['this_time_success_request']},\n"
             f"this_time_fail_request: {data['this_time_fail_request']},\n"
             f"today_all_request: {data['today_all_request']},\n"
