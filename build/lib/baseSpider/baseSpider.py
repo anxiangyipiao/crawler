@@ -361,7 +361,10 @@ class BaseSpiderObject(scrapy.Spider):
         # key 为 source + 日期
 
         data = {
-            'time': self.crawl_today.strftime('%Y-%m-%d'),
+            'name': self.name,
+            'source': self.source,
+            'site_name': self.site_name,
+            'time': self.crawl_today.strftime('%Y-%m-%d %H:%M:%S'),
             'today_all_request': 0,
             'today_success_request': 0,
             'today_fail_request': 0,
@@ -374,18 +377,24 @@ class BaseSpiderObject(scrapy.Spider):
             'failed_urls': json.dumps([])
         }
 
-        # hash 结构存储
-
         if not self.task_redis_server.exists(key):
-                
+
+            # 存储数据 
             self.task_redis_server.hmset(key, data)
-       
+
+            # # # 对数据进行排序    
+            # score = 0
+            # self.task_redis_server.zadd('key_sorted_set', {key: score})
+  
     def read_source_log(self,key):
 
         data = self.task_redis_server.hgetall(key)
 
         # 转为字典
         return {
+            'name': data[b'name'].decode('utf-8'),
+            'source': data[b'source'].decode('utf-8'),
+            'site_name': data[b'site_name'].decode('utf-8'),
             'time': data[b'time'].decode('utf-8'),
             'today_all_request': int(data[b'today_all_request'].decode('utf-8')),
             'today_success_request': int(data[b'today_success_request'].decode('utf-8')),
@@ -402,7 +411,13 @@ class BaseSpiderObject(scrapy.Spider):
     def write_source_log(self,key,data:dict):
         
         data['failed_urls'] = json.dumps(data['failed_urls'])
+
+        # 存储数据
         self.task_redis_server.hmset(key, data)
+
+        # 对数据进行排序,更新key的分数,分数为时间戳,
+        score = datetime.now().timestamp()
+        self.task_redis_server.zadd('key_sorted_set', {key: score},xx=True)
 
     def insert_task_log(self):
         """
