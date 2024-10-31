@@ -377,20 +377,18 @@ class BaseSpiderObject(scrapy.Spider):
             'failed_urls': json.dumps([])
         }
 
-        # zadd 结构存储
         if not self.task_redis_server.exists(key):
-            score = datetime.now().timestamp()
-            
-            self.task_redis_server.zadd(key, {data: score})
 
-        # if not self.task_redis_server.exists(key):
-                
-        #     self.task_redis_server.hmset(key, data)
-       
+            # 存储数据 
+            self.task_redis_server.hmset(key, data)
+
+            # # # 对数据进行排序    
+            # score = 0
+            # self.task_redis_server.zadd('key_sorted_set', {key: score})
+  
     def read_source_log(self,key):
 
-        # data = self.task_redis_server.hgetall(key)
-        data = self.task_redis_server.zrange(key, 0, -1, withscores=True)
+        data = self.task_redis_server.hgetall(key)
 
         # 转为字典
         return {
@@ -413,8 +411,13 @@ class BaseSpiderObject(scrapy.Spider):
     def write_source_log(self,key,data:dict):
         
         data['failed_urls'] = json.dumps(data['failed_urls'])
+
+        # 存储数据
+        self.task_redis_server.hmset(key, data)
+
+        # 对数据进行排序,更新key的分数,分数为时间戳,
         score = datetime.now().timestamp()
-        self.task_redis_server.zadd(key, {data: score})
+        self.task_redis_server.zadd('key_sorted_set', {key: score},xx=True)
 
     def insert_task_log(self):
         """
