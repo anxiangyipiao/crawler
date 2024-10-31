@@ -382,7 +382,6 @@ class BaseSpiderObject(scrapy.Spider):
             # 存储数据 
             self.task_redis_server.hmset(key, data)
 
-
     def read_source_log(self,key):
 
         data = self.task_redis_server.hgetall(key)
