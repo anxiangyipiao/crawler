@@ -364,7 +364,7 @@ class BaseSpiderObject(scrapy.Spider):
             'name': self.name,
             'source': self.source,
             'site_name': self.site_name,
-            'time': self.crawl_today.strftime('%Y-%m-%d %H:%M:%S'),
+            'time': self.crawl_today.strftime('%Y-%m-%d'),
             'today_all_request': 0,
             'today_success_request': 0,
             'today_fail_request': 0,
