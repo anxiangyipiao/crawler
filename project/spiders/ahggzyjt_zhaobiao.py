@@ -9,6 +9,15 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         'https://www.ahggzyjt.com/jyxx/002001/002001001/secondPage.html',
         'https://www.ahggzyjt.com/jyxx/002001/002001002/secondPage.html',
         'https://www.ahggzyjt.com/jyxx/002001/002001003/secondPage.html',
+        'https://www.ahggzyjt.com/jyxx/002002/002002002/secondPage.html',
+        'https://www.ahggzyjt.com/jyxx/002002/002002003/secondPage.html',
+        'https://www.ahggzyjt.com/jyxx/002003/002003002/secondPage.html',
+        'https://www.ahggzyjt.com/jyxx/002003/002003003/secondPage.html',
+        'https://www.ahggzyjt.com/jyxx/002004/secondPage.html',
+        'https://www.ahggzyjt.com/jyxx/002005/secondPage.html',
+        'https://www.ahggzyjt.com/jyxx/002011/secondPage.html',
+        'https://www.ahggzyjt.com/jyxx/002012/secondPage.html',
+        'https://www.ahggzyjt.com/jyxx/002013/secondPage.html',
     ]
     
     
