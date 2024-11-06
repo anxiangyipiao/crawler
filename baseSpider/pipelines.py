@@ -79,12 +79,3 @@ class baseSpiderPipeline:
         # 将item_json存入redis
         redis_conn.lpush('result', item_json)
 
-        
-    # def os_exit(self,spider):
-
-    #     if spider.stop_flag:
-
-    #         # 执行关闭爬虫
-    #         spider.closed('max_failures')
-    #         # 立即终止进程
-    #         os._exit(1)
