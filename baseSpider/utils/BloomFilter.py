@@ -124,3 +124,98 @@ class BloomFilter(object):
 
 # 示例使用
 bloomFilter = BloomFilter(server=RedisConnectionManager.get_connection(),expected_items=10000000, false_positive_rate=0.001,key=BLOOMFILTER_KEY)
+
+
+# 使用 RedisBloom 过滤器  redisbloom
+
+
+import redis
+from baseSpider.settings import BLOOMFILTER_KEY
+from datetime import datetime
+from functools import lru_cache
+
+# RedisBloom 命令前缀
+BF_RESERVE_CMD = 'BF.RESERVE'
+BF_ADD_CMD = 'BF.ADD'
+BF_EXISTS_CMD = 'BF.EXISTS'
+
+class RedisBloomFilter(object):
+    def __init__(self, server, expected_items, false_positive_rate, key=None):
+        """
+        初始化 RedisBloomFilter 实例。
+        
+        Args:
+            server (redis.Redis): Redis 连接对象。
+            expected_items (int): 预计插入布隆过滤器的元素数量。
+            false_positive_rate (float): 误报率，取值范围在0到1之间。
+            key (str, optional): 布隆过滤器在Redis中的key。默认为"bloomfilter"。
+        
+        Raises:
+            ValueError: 如果误报率不在0到1之间或预计插入的元素数量小于0，则抛出此异常。
+        """
+        if false_positive_rate >= 1 or false_positive_rate <= 0:
+            raise ValueError("False positive rate must be between 0 and 1")
+        if expected_items < 0:
+            raise ValueError("Expected items count must be non-negative")
+
+        self.server = server
+        self.key = self.month_reset(BLOOMFILTER_KEY if key is None else key)
+        # 初始化布隆过滤器
+        self._reserve(expected_items, false_positive_rate)
+
+    def _reserve(self, expected_items, false_positive_rate):
+        """
+        在 Redis 中预留一个布隆过滤器。
+        
+        Args:
+            expected_items (int): 预计插入布隆过滤器的元素数量。
+            false_positive_rate (float): 误报率，取值范围在0到1之间。
+        """
+        # 使用 RedisBloom 的 BF.RESERVE 命令
+        self.server.execute_command(BF_RESERVE_CMD, self.key, false_positive_rate, expected_items)
+
+    def is_contained(self, str_input):
+        """
+        判断字符串是否可能存在于过滤器中。
+        
+        Args:
+            str_input (str): 待判断的字符串。
+        
+        Returns:
+            bool: 如果字符串可能存在于过滤器中，则返回True；否则返回False。
+        """
+        # 使用 RedisBloom 的 BF.EXISTS 命令
+        return self.server.execute_command(BF_EXISTS_CMD, self.key, str_input)
+
+    def add(self, str_input):
+        """
+        向过滤器中添加一个元素。
+        
+        Args:
+            str_input (str): 待添加的字符串元素。
+        """
+        # 使用 RedisBloom 的 BF.ADD 命令
+        self.server.execute_command(BF_ADD_CMD, self.key, str_input)
+
+    def month_reset(self, key):
+        """
+        根据当前月份重置布隆过滤器key。
+        
+        Args:
+            key (str): 需要重置的布隆过滤器key。
+        
+        Returns:
+            str: 拼接当前月份后的布隆过滤器key。
+        """
+        month = datetime.now().month  # 当前月份
+        year = datetime.now().year  # 当前年份
+        return f"{key}:{year}:{month}"
+
+# 示例使用
+server = redis.Redis(host='localhost', port=6379, db=0)
+bloomFilter = RedisBloomFilter(server=server, expected_items=10000000, false_positive_rate=0.001, key=BLOOMFILTER_KEY)
+
+# 测试添加和查询
+bloomFilter.add("test_item")
+print(bloomFilter.is_contained("test_item"))  # 应该输出 True
+print(bloomFilter.is_contained("not_added_item"))  # 应该输出 False
