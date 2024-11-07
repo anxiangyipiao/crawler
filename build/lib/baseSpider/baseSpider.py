@@ -31,7 +31,6 @@ class BaseSpiderObject(scrapy.Spider):
     insertCount = 0 # 总任务数量
     successCount = 0 # 成功数量
 
-
     failed_urls = [] # 失败的url
 
     max_page = 10 # 最大页数
@@ -39,7 +38,6 @@ class BaseSpiderObject(scrapy.Spider):
     max_failures = 10 # 最大失败数量
 
     # stop_flag = False      # 终止标识
-
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
     
 
@@ -67,8 +65,8 @@ class BaseSpiderObject(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(BaseSpiderObject, self).__init__(*args, **kwargs)
-        # self.task_redis_server.rpush('running_spiders', self.name)
-        # logger.info(f'Spider {self.name} started and added to running queue.')
+        self.task_redis_server.rpush('running_spiders', self.name)
+        logger.info(f'Spider {self.name} started and added to running queue.')
 
   
     def get_base_item(self)->BaseItem:
@@ -213,12 +211,8 @@ class BaseSpiderObject(scrapy.Spider):
         Returns:
             None
         """
+        bloomFilter.add(url)
         
-        try:
-            bloomFilter.add(url)
-        except:
-            logger.error("BloomFilter add error")
-
     def is_time_stop(self,publishTime:str)->bool:
         """
         判断当前时间是否超过了发布时间所指定的时间限制
@@ -325,6 +319,7 @@ class BaseSpiderObject(scrapy.Spider):
         try:
             data = {
                 'source': self.source,
+                'name': self.name,
                 'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             }
             self.task_redis_server.lpush('url_error',json.dumps(data))
@@ -337,6 +332,7 @@ class BaseSpiderObject(scrapy.Spider):
         try:
             data = {
                 'source': self.source,
+                 'name': self.name,
                 'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             }
             self.task_redis_server.lpush('time_error',json.dumps(data))
@@ -364,7 +360,7 @@ class BaseSpiderObject(scrapy.Spider):
             'name': self.name,
             'source': self.source,
             'site_name': self.site_name,
-            'time': self.crawl_today.strftime('%Y-%m-%d %H:%M:%S'),
+            'time': self.crawl_today.strftime('%Y-%m-%d'),
             'today_all_request': 0,
             'today_success_request': 0,
             'today_fail_request': 0,
@@ -381,7 +377,6 @@ class BaseSpiderObject(scrapy.Spider):
 
             # 存储数据 
             self.task_redis_server.hmset(key, data)
-
 
     def read_source_log(self,key):
 
@@ -499,9 +494,8 @@ class BaseSpiderObject(scrapy.Spider):
         # 输出日志
         self.log_info(data)
 
-
-        # # 清空任务数量
-        # self.task_redis_server.lrem('running_spiders', 0, self.name)
+        # 清空任务数量
+        self.task_redis_server.lrem('running_spiders', 0, self.name)
 
     def log_info(self,data):
          # 输出日志
@@ -510,7 +504,7 @@ class BaseSpiderObject(scrapy.Spider):
             f"source: {data['source']}, \n"
             f"site_name: {data['site_name']}, \n"
             f"time: {data['time']}, \n"
-            f"\nthis_time_all_request: { data['this_time_all_request']}, \n" 
+            f"this_time_all_request: { data['this_time_all_request']}, \n" 
             f"this_time_success_request: {data['this_time_success_request']},\n"
             f"this_time_fail_request: {data['this_time_fail_request']},\n"
             f"today_all_request: {data['today_all_request']},\n"

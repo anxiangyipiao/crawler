@@ -13,7 +13,6 @@ setup(
     install_requires=[
         'fake_useragent',
         'playwright',
-        'mmh3',
         'redis',
         'ddddocr',
         'requests',
