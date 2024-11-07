@@ -31,7 +31,6 @@ class BaseSpiderObject(scrapy.Spider):
     insertCount = 0 # 总任务数量
     successCount = 0 # 成功数量
 
-
     failed_urls = [] # 失败的url
 
     max_page = 10 # 最大页数
@@ -39,7 +38,6 @@ class BaseSpiderObject(scrapy.Spider):
     max_failures = 10 # 最大失败数量
 
     # stop_flag = False      # 终止标识
-
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
     
 
@@ -213,12 +211,8 @@ class BaseSpiderObject(scrapy.Spider):
         Returns:
             None
         """
+        bloomFilter.add(url)
         
-        try:
-            bloomFilter.add(url)
-        except:
-            logger.error("BloomFilter add error")
-
     def is_time_stop(self,publishTime:str)->bool:
         """
         判断当前时间是否超过了发布时间所指定的时间限制
