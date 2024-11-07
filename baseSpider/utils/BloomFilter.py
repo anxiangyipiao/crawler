@@ -134,6 +134,7 @@ from baseSpider.settings import BLOOMFILTER_KEY
 from datetime import datetime
 from functools import lru_cache
 from baseSpider.utils.RedisManage import RedisConnectionManager
+from baseSpider.settings import Expected_items,False_positive_rate
 
 # RedisBloom 命令前缀
 BF_RESERVE_CMD = 'BF.RESERVE'
@@ -141,6 +142,7 @@ BF_ADD_CMD = 'BF.ADD'
 BF_EXISTS_CMD = 'BF.EXISTS'
 
 class RedisBloomFilter(object):
+    
     def __init__(self, expected_items, false_positive_rate, key=None, db=0):
         """
         初始化 RedisBloomFilter 实例。
@@ -220,6 +222,6 @@ class RedisBloomFilter(object):
 
 
 
-bloomFilter = RedisBloomFilter(expected_items=10000000, false_positive_rate=0.001, key=BLOOMFILTER_KEY)
+bloomFilter = RedisBloomFilter(expected_items=Expected_items, false_positive_rate=False_positive_rate, key=BLOOMFILTER_KEY)
 
 

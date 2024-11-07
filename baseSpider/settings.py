@@ -145,3 +145,5 @@ BLOOMFILTER_KEY = "bloomfilter"
 LOG_LEVEL = "INFO"
 
 
+Expected_items = 1000000
+False_positive_rate = 0.001
