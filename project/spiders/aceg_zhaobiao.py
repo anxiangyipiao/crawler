@@ -16,45 +16,45 @@ class ahhyzb(BaseSpiderObject):
     source = 'cg.aceg.com.cn'
 
     data = {
-        "token": "",
-        "pn": 0,
-        "rn": 9,
-        "sdt": "",
-        "edt": "",
-        "wd": "%20",
-        "inc_wd": "",
-        "exc_wd": "",
-        "fields": "title",
-        "cnum": "001",
-        "sort": "{\"webdate\":\"0\"}",
-        "ssort": "title",
-        "cl": 200,
-        "terminal": "",
-        "condition": [
-            {
-                "fieldName": "categorynum",
-                "equal": "001",
-                "notEqual": "",
-                "equalList": None,    
-                "notEqualList": None,
-                "isLike": True,
-                "likeType": 2
-            }
-        ],
-        "time": [
-            {
-                "fieldName": "webdate",
-                "startTime": "1970-01-01 00:00:00",
-                "endTime": "2999-12-31 23:59:59"
-            }
-        ],
-        "highlights": "citycode",
-        "statistics": None,
-        "unionCondition": None,
-        "accuracy": "",
-        "noParticiple": "0",
-        "searchRange": None,
-        "isBusiness": "1"
+    "token": "",
+    "pn": 0,
+    "rn": 9,
+    "sdt": "",
+    "edt": "",
+    "wd": "%20",
+    "inc_wd": "",
+    "exc_wd": "",
+    "fields": "title",
+    "cnum": "001",
+    "sort": "{\"webdate\":\"0\"}",
+    "ssort": "title",
+    "cl": 200,
+    "terminal": "",
+    "condition": [
+        {
+            "fieldName": "categorynum",
+            "equal": "002",
+            "notEqual": None,
+            "equalList": None,
+            "notEqualList": None,
+            "isLike": True,
+            "likeType": 2
+        }
+    ],
+    "time": [
+        {
+            "fieldName": "webdate",
+            "startTime": "1970-01-01 00:00:00",
+            "endTime": "2999-12-31 23:59:59"
+        }
+    ],
+    "highlights": "citycode",
+    "statistics": None,
+    "unionCondition": None,
+    "accuracy": "",
+    "noParticiple": "0",
+    "searchRange": None,
+    "isBusiness": "1"
 }
 
 
@@ -62,7 +62,7 @@ class ahhyzb(BaseSpiderObject):
                
             # 设置请求参数
             request_params = {
-                'request_body': None,
+                'request_body': 'json',
                 'url': self.start_urls,
                 'method': 'POST',
                 'meta': {'page': 1,},
@@ -106,6 +106,7 @@ class ahhyzb(BaseSpiderObject):
         page += 1
         self.data['pn'] = page * 9
         request_params = {
+                    'request_body': 'json',
                     'url': self.start_urls,
                     'method': 'post',
                     'meta': {'page': page},
