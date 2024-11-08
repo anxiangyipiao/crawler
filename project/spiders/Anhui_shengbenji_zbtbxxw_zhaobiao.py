@@ -26,7 +26,7 @@ class Anhui_shengbenji_zbtbxxw_zhaobiaoSpider(BaseSpiderObject):
     county = ""  # 选填，爬虫区/县
     site_name = '安徽省招标投标信息网'
     source = 'www.ahtba.org.cn'
-    max_page = 100
+    max_page = 2
 
     def start_requests(self):
         
