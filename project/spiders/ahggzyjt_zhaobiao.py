@@ -5,8 +5,7 @@ from baseSpider.baseSpider import BaseSpiderObject,RequestItem
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "ahggzyjt_zhaobiao"
-    start_urls = [
-        
+    start_urls = [  
         'https://www.ahggzyjt.com/jyxx/002001/002001001/secondPage.html',
         'https://www.ahggzyjt.com/jyxx/002001/002001002/secondPage.html',
         'https://www.ahggzyjt.com/jyxx/002001/002001003/secondPage.html',
