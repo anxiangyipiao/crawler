@@ -294,13 +294,13 @@ class BaseSpiderObject(scrapy.Spider):
         # 检查任务是否满足停止条件,如果时间超过timeRange天则跳过
         if self.is_time_stop(task['publish_time']):
             
-            self.log("Stopping spider due to time condition.")
+            logger.debug("Stopping spider due to time condition.")
             # raise CloseSpider(reason='Time Stop Condition Met')
             return False
  
         # 检查任务是否满足停止条件,如果url已经爬取过则跳过
         if self.is_url_having(task['url']):
-            self.log("Url exit.")
+            logger.debug("Url exit.")
             return False
 
         # 计算任务数量
