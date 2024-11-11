@@ -174,9 +174,12 @@ class RedisBloomFilter(object):
             false_positive_rate (float): 误报率，取值范围在0到1之间。
         """
         try:
-            self.server.execute_command(BF_RESERVE_CMD, self.key, false_positive_rate, expected_items)
+            if not self.server.exists(self.key):
+               self.server.execute_command(BF_RESERVE_CMD, self.key, false_positive_rate, expected_items)
+            else:
+                print(f"Failed to initialize Bloom filter: {e}")    
         except redis.exceptions.RedisError as e:
-            print(f"Failed to initialize Bloom filter: {e}")
+            print(f"Bloom filter is created: {e}")
 
     def is_contained(self, str_input):
         """
