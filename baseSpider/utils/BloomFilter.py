@@ -177,7 +177,7 @@ class RedisBloomFilter(object):
             if not self.server.exists(self.key):
                self.server.execute_command(BF_RESERVE_CMD, self.key, false_positive_rate, expected_items)
             else:
-                print(f"Failed to initialize Bloom filter: {e}")    
+                print(f"Bloom filter is already created: {self.key}")    
         except redis.exceptions.RedisError as e:
             print(f"Bloom filter is created: {e}")
 
