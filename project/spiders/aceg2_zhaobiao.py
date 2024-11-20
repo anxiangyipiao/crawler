@@ -3,7 +3,7 @@ from baseSpider.baseSpider import BaseSpiderObject,RequestItem
 
 class ahhyzb(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
-    name = "aceg_zhaobiao"
+    name = "aceg2_zhaobiao"
     start_urls = 'https://cg.aceg.com.cn/inteligentsearch/rest/esinteligentsearch/getFullTextDataNew'
     
     
