@@ -10,7 +10,7 @@ class RedisConnectionManager:
     @classmethod
     def get_pool(cls,db):
         if cls._pool is None:
-            cls._pool = ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, db=db, password=REDIS_PASSWORD)
+            cls._pool = ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, db=db)
         return cls._pool
 
 
