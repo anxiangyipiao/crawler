@@ -8,7 +8,7 @@ class ahhyzb(BaseSpiderObject):
     
     
     next_base_urls = ''  # 用于下一页网址拼接
-    contents_base_urls = ''  # 用于拼接详情页网址
+    contents_base_urls = 'https://cg.aceg.com.cn'  # 用于拼接详情页网址
     province = ""  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
