@@ -173,13 +173,12 @@ class RedisBloomFilter(object):
             expected_items (int): 预计插入布隆过滤器的元素数量。
             false_positive_rate (float): 误报率，取值范围在0到1之间。
         """
-        try:
-            if not self.server.exists(self.key):
+        
+        if not self.server.exists(self.key):
                self.server.execute_command(BF_RESERVE_CMD, self.key, false_positive_rate, expected_items)
-            else:
+        else:
                 print(f"Bloom filter is already created: {self.key}")    
-        except redis.exceptions.RedisError as e:
-            print(f"Bloom filter is created: {e}")
+       
 
     def is_contained(self, str_input):
         """
