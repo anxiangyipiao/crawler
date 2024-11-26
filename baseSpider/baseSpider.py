@@ -1,3 +1,4 @@
+import inspect
 import json
 from scrapy.exceptions import CloseSpider
 import scrapy
@@ -25,6 +26,7 @@ class BaseSpiderObject(scrapy.Spider):
     site_name = None
     source = None # 网站
     page_over = False # 翻页
+    current_directory = None
     
 
     timeRange = 0
@@ -68,6 +70,10 @@ class BaseSpiderObject(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(BaseSpiderObject, self).__init__(*args, **kwargs)
+
+        directory = inspect.getmodule(self.__class__).__file__
+        self.current_directory = directory.split('/spiders')[0].split('/')[-1]
+
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
 
@@ -390,24 +396,25 @@ class BaseSpiderObject(scrapy.Spider):
         # 参数10 失败的url,存储的是url的列表
         # key 为 source + 日期
 
-        data = {
-            'name': self.name,
-            'source': self.source,
-            'site_name': self.site_name,
-            'last_publish_time': '',
-            'today_all_request': 0,
-            'today_success_request': 0,
-            'today_fail_request': 0,
-            'this_time_all_request': 0,
-            'this_time_success_request': 0,
-            'this_time_fail_request': 0,
-            'last_time': '',
-            'run_time': '',
-            'crawl_count': 0,
-            'failed_urls': json.dumps([])
-        }
-
+        # 判断key是否存在
         if not self.task_redis_server.exists(key):
+
+            data = {
+                'name': self.name,
+                'source': self.source,
+                'site_name': self.site_name,
+                'last_publish_time': '',
+                'today_all_request': 0,
+                'today_success_request': 0,
+                'today_fail_request': 0,
+                'this_time_all_request': 0,
+                'this_time_success_request': 0,
+                'this_time_fail_request': 0,
+                'last_time': '',
+                'run_time': '',
+                'crawl_count': 0,
+                'failed_urls': json.dumps([])
+            }
 
             # 存储数据 
             self.task_redis_server.hmset(key, data)
@@ -486,6 +493,9 @@ class BaseSpiderObject(scrapy.Spider):
         if self.update_state():
             data['state'] = 'success'
          
+        # 添加当前目录
+        data['current_directory'] = self.current_directory
+
         #  计算本次爬总数量
         data['this_time_all_request'] = self.insertCount
 
@@ -552,7 +562,9 @@ class BaseSpiderObject(scrapy.Spider):
             f"\nname: {data['name']}, \n"
             f"source: {data['source']}, \n"
             f"site_name: {data['site_name']}, \n"
-            f"time: {data['last_publish_time']}, \n"
+            f"state: {data['state']}, \n"
+            f"current_directory: {data['current_directory']},\n"
+            f"last_publish_time: {data['last_publish_time']}, \n"
             f"this_time_all_request: { data['this_time_all_request']}, \n" 
             f"this_time_success_request: {data['this_time_success_request']},\n"
             f"this_time_fail_request: {data['this_time_fail_request']},\n"
