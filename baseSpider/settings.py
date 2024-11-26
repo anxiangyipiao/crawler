@@ -147,9 +147,6 @@ MYSQL_DB = "bidSpider2"
 # 用于布隆过滤器的redis key
 BLOOMFILTER_KEY = "bloomfilter"
 
-# info-level 输出日志，debug-level 不输出日志
-LOG_LEVEL = "INFO"
-
 
 Expected_items = 1000000
 False_positive_rate = 0.001
