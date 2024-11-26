@@ -24,7 +24,9 @@ class BaseSpiderObject(scrapy.Spider):
     county = None  # 选填，爬虫区/县
     site_name = None
     source = None # 网站
+    page_over = False # 翻页
     
+
     timeRange = 0
     crawl_today = datetime.now() # 爬虫开始时间
     last_publish_time = None # 最新发布时间
@@ -271,6 +273,7 @@ class BaseSpiderObject(scrapy.Spider):
             logger.debug(f"Requesting next page: {page}")
             return self.parse_task(RequestItem(**request_params))
         else:
+            self.page_over = True
             logger.debug(f"No next page or stopping condition met at page {page}.")
 
     def update_publish_time(self, publish_time:str):
@@ -311,6 +314,8 @@ class BaseSpiderObject(scrapy.Spider):
             self.insert_time_error()
             raise CloseSpider('time xpath is changed')
 
+
+
         # 检查任务是否满足停止条件,如果时间超过timeRange天则跳过
         if self.is_time_stop(task['publish_time']):
             
@@ -336,6 +341,12 @@ class BaseSpiderObject(scrapy.Spider):
                 logger.error("Insert task item error",e)
 
         return True
+
+    def update_state(self):
+
+        if self.insertCount == self.successCount and self.page_over:
+
+            return True
 
     def insert_url_error(self):
         
@@ -410,6 +421,7 @@ class BaseSpiderObject(scrapy.Spider):
             'name': data[b'name'].decode('utf-8'),
             'source': data[b'source'].decode('utf-8'),
             'site_name': data[b'site_name'].decode('utf-8'),
+            'state': 'failure',
             'last_publish_time': data[b'last_publish_time'].decode('utf-8'),
             'today_all_request': int(data[b'today_all_request'].decode('utf-8')),
             'today_success_request': int(data[b'today_success_request'].decode('utf-8')),
@@ -470,6 +482,10 @@ class BaseSpiderObject(scrapy.Spider):
         # 读取日志
         data = self.read_source_log(key)
 
+        # 计算状态
+        if self.update_state():
+            data['state'] = 'success'
+         
         #  计算本次爬总数量
         data['this_time_all_request'] = self.insertCount
 
