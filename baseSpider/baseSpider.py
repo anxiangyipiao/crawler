@@ -289,7 +289,6 @@ class BaseSpiderObject(scrapy.Spider):
         if self.last_publish_time is None or new_publish_time > self.last_publish_time:
             self.last_publish_time = new_publish_time
             
-
     def calculate_task_item(self,task:BaseItem):
         
         """
@@ -479,7 +478,6 @@ class BaseSpiderObject(scrapy.Spider):
 
         # 计算本次爬取失败数量
         data['this_time_fail_request'] = self.insertCount - self.successCount
-
 
         # 计算今日总请求数量
         data['today_all_request'] = data['today_all_request'] +  self.insertCount -  data['today_fail_request']
