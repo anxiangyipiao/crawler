@@ -1,3 +1,4 @@
+import inspect
 import json
 from scrapy.exceptions import CloseSpider
 import scrapy
@@ -24,9 +25,13 @@ class BaseSpiderObject(scrapy.Spider):
     county = None  # 选填，爬虫区/县
     site_name = None
     source = None # 网站
+    page_over = False # 翻页
+    current_directory = None
     
+
     timeRange = 0
     crawl_today = datetime.now() # 爬虫开始时间
+    last_publish_time = None # 最新发布时间
 
     insertCount = 0 # 总任务数量
     successCount = 0 # 成功数量
@@ -65,11 +70,16 @@ class BaseSpiderObject(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(BaseSpiderObject, self).__init__(*args, **kwargs)
+
+        directory = inspect.getmodule(self.__class__).__file__
+        self.current_directory = directory.split('/spiders')[0].split('/')[-1]
+
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
 
   
     def get_base_item(self)->BaseItem:
+        
         """
         返回一个包含基本信息的 BaseItem 对象。
         
@@ -107,6 +117,7 @@ class BaseSpiderObject(scrapy.Spider):
 
     # 判断时间超过timeRange天的url不再爬取
     def is_time_out(self, time:datetime)->bool:
+        
         """
         判断给定的时间是否超出了设定的时间范围。
         
@@ -118,6 +129,7 @@ class BaseSpiderObject(scrapy.Spider):
         
         """
         if abs((time.date() - self.crawl_today.date()).days) > self.timeRange:
+            
             return True
 
         return False
@@ -267,8 +279,25 @@ class BaseSpiderObject(scrapy.Spider):
             logger.debug(f"Requesting next page: {page}")
             return self.parse_task(RequestItem(**request_params))
         else:
+            self.page_over = True
             logger.debug(f"No next page or stopping condition met at page {page}.")
 
+    def update_publish_time(self, publish_time:str):
+        """
+        更新发布时间，将发布时间转换为datetime类型，然后将其赋值给self.publish_time属性。
+        
+        Args:
+            publish_time (str): 发布时间字符串，格式为"%Y-%m-%d %H:%M:%S"
+        
+        Returns:
+            None
+        """
+
+        new_publish_time = self.format_time(publish_time)
+
+        if self.last_publish_time is None or new_publish_time > self.last_publish_time:
+            self.last_publish_time = new_publish_time
+            
     def calculate_task_item(self,task:BaseItem):
         
         """
@@ -291,6 +320,8 @@ class BaseSpiderObject(scrapy.Spider):
             self.insert_time_error()
             raise CloseSpider('time xpath is changed')
 
+
+
         # 检查任务是否满足停止条件,如果时间超过timeRange天则跳过
         if self.is_time_stop(task['publish_time']):
             
@@ -304,7 +335,10 @@ class BaseSpiderObject(scrapy.Spider):
             return False
 
         # 计算任务数量
-        try:           
+        try:    
+                # 更新发布时间
+                self.update_publish_time(task['publish_time'])
+
                 self.insertCount += 1
                 self.failed_urls.append(task['url'])
 
@@ -313,6 +347,12 @@ class BaseSpiderObject(scrapy.Spider):
                 logger.error("Insert task item error",e)
 
         return True
+
+    def update_state(self):
+
+        if self.insertCount == self.successCount and self.page_over:
+
+            return True
 
     def insert_url_error(self):
         
@@ -349,31 +389,32 @@ class BaseSpiderObject(scrapy.Spider):
         # 参数3 今天网站爬取的失败数量
         # 参数4 本次爬取成功的数量 
         # 参数5 本次爬取失败的数量
-        # 参数6 今天的日期
+        # 参数6 本网站最新的发布时间
         # 参数7 最近一次爬取的时间
-        # 参数8 本轮爬虫运行的次数
+        # 参数8 本轮爬虫运行的时间
         # 参数9 今天爬取的次数
         # 参数10 失败的url,存储的是url的列表
         # key 为 source + 日期
 
-        data = {
-            'name': self.name,
-            'source': self.source,
-            'site_name': self.site_name,
-            'time': self.crawl_today.strftime('%Y-%m-%d'),
-            'today_all_request': 0,
-            'today_success_request': 0,
-            'today_fail_request': 0,
-            'this_time_all_request': 0,
-            'this_time_success_request': 0,
-            'this_time_fail_request': 0,
-            'last_time': '',
-            'run_time': '',
-            'crawl_count': 0,
-            'failed_urls': json.dumps([])
-        }
-
+        # 判断key是否存在
         if not self.task_redis_server.exists(key):
+
+            data = {
+                'name': self.name,
+                'source': self.source,
+                'site_name': self.site_name,
+                'last_publish_time': '',
+                'today_all_request': 0,
+                'today_success_request': 0,
+                'today_fail_request': 0,
+                'this_time_all_request': 0,
+                'this_time_success_request': 0,
+                'this_time_fail_request': 0,
+                'last_time': '',
+                'run_time': '',
+                'crawl_count': 0,
+                'failed_urls': json.dumps([])
+            }
 
             # 存储数据 
             self.task_redis_server.hmset(key, data)
@@ -387,7 +428,8 @@ class BaseSpiderObject(scrapy.Spider):
             'name': data[b'name'].decode('utf-8'),
             'source': data[b'source'].decode('utf-8'),
             'site_name': data[b'site_name'].decode('utf-8'),
-            'time': data[b'time'].decode('utf-8'),
+            'state': 'failure',
+            'last_publish_time': data[b'last_publish_time'].decode('utf-8'),
             'today_all_request': int(data[b'today_all_request'].decode('utf-8')),
             'today_success_request': int(data[b'today_success_request'].decode('utf-8')),
             'today_fail_request': int(data[b'today_fail_request'].decode('utf-8')),
@@ -447,15 +489,12 @@ class BaseSpiderObject(scrapy.Spider):
         # 读取日志
         data = self.read_source_log(key)
 
-        # # 计算今日总请求数量
-        # data['all_request'] = data['all_request'] +  self.insertCount -  data['fail_request']
-
-        # # 计算今日成功数量
-        # data['success_request'] += self.successCount
-
-        # # 计算今日失败数量
-        # data['fail_request'] = data['all_request'] - data['success_request']
-
+        # 计算状态
+        if self.update_state():
+            data['state'] = 'success'
+         
+        # 添加当前目录
+        data['current_directory'] = self.current_directory
 
         #  计算本次爬总数量
         data['this_time_all_request'] = self.insertCount
@@ -465,7 +504,6 @@ class BaseSpiderObject(scrapy.Spider):
 
         # 计算本次爬取失败数量
         data['this_time_fail_request'] = self.insertCount - self.successCount
-
 
         # 计算今日总请求数量
         data['today_all_request'] = data['today_all_request'] +  self.insertCount -  data['today_fail_request']
@@ -482,6 +520,10 @@ class BaseSpiderObject(scrapy.Spider):
         # 计算爬虫运行时间,转化为秒
         data['run_time'] = str((datetime.now() - self.crawl_today).seconds)
 
+        # last_publish_time
+        if self.compare_time(data['last_publish_time']):
+            data['last_publish_time'] = self.last_publish_time.strftime('%Y-%m-%d')
+
         # 计算爬取次数
         data['crawl_count'] += 1
 
@@ -497,13 +539,32 @@ class BaseSpiderObject(scrapy.Spider):
         # 清空任务数量
         self.task_redis_server.lrem('running_spiders', 0, self.name)
 
+    def compare_time(self, time:str):
+
+        if time == '':
+            return True
+        
+        if self.last_publish_time is None:
+            return False
+
+        
+        datetime_object = datetime.strptime(time, '%Y-%m-%d')
+        # 比较时间,如果当前时间大于上次发布时间,则返回True
+        if self.last_publish_time > datetime_object:
+            
+            return True
+        else:
+            return False
+
     def log_info(self,data):
          # 输出日志
         logger.error(
             f"\nname: {data['name']}, \n"
             f"source: {data['source']}, \n"
             f"site_name: {data['site_name']}, \n"
-            f"time: {data['time']}, \n"
+            f"state: {data['state']}, \n"
+            f"current_directory: {data['current_directory']},\n"
+            f"last_publish_time: {data['last_publish_time']}, \n"
             f"this_time_all_request: { data['this_time_all_request']}, \n" 
             f"this_time_success_request: {data['this_time_success_request']},\n"
             f"this_time_fail_request: {data['this_time_fail_request']},\n"

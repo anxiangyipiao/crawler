@@ -8,7 +8,7 @@ import scrapy
 
 class RequestItem(scrapy.Item):
 
-        # 默认值可以在这里设置
+    # 默认值可以在这里设置
     default_values = {
         'method': 'GET',  # 默认请求方式为 GET
         'params': None,# 默认请求参数为空
