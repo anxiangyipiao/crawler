@@ -112,18 +112,11 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
 
-# redis
-# REDIS_HOST = "43.128.136.204"
-# REDIS_PORT = 63004
-# REDIS_PASSWORD = "zax123456"
-# REDIS_DB = 0
-
-
 # 测试
 REDIS_HOST = "139.224.244.220"
 REDIS_PORT = 6379
 REDIS_PASSWORD = "zax123456"
-REDIS_DB = 0
+REDIS_DB = 1
 
 
 # rabbitmq
