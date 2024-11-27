@@ -320,7 +320,8 @@ class BaseSpiderObject(scrapy.Spider):
             self.insert_time_error()
             raise CloseSpider('time xpath is changed')
 
-
+        # 更新发布时间
+        self.update_publish_time(task['publish_time'])
 
         # 检查任务是否满足停止条件,如果时间超过timeRange天则跳过
         if self.is_time_stop(task['publish_time']):
@@ -336,9 +337,7 @@ class BaseSpiderObject(scrapy.Spider):
 
         # 计算任务数量
         try:    
-                # 更新发布时间
-                self.update_publish_time(task['publish_time'])
-
+    
                 self.insertCount += 1
                 self.failed_urls.append(task['url'])
 
@@ -543,11 +542,7 @@ class BaseSpiderObject(scrapy.Spider):
 
         if time == '':
             return True
-        
-        if self.last_publish_time is None:
-            return False
-
-        
+     
         datetime_object = datetime.strptime(time, '%Y-%m-%d')
         # 比较时间,如果当前时间大于上次发布时间,则返回True
         if self.last_publish_time > datetime_object:
