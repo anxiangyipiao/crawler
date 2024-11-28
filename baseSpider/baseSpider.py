@@ -67,7 +67,6 @@ class BaseSpiderObject(scrapy.Spider):
             'LOG_LEVEL':'ERROR',
     }
     
-
     def __init__(self, *args, **kwargs):
         super(BaseSpiderObject, self).__init__(*args, **kwargs)
 
@@ -76,8 +75,7 @@ class BaseSpiderObject(scrapy.Spider):
 
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
-
-  
+ 
     def get_base_item(self)->BaseItem:
         
         """
