@@ -540,12 +540,13 @@ class BaseSpiderObject(scrapy.Spider):
 
     def compare_time(self, time:str):
 
-        if time == '':
-            return True
-        
+
         if self.last_publish_time is None:
             return False
-     
+
+        if time == '' or time is None:
+            return True
+        
         datetime_object = datetime.strptime(time, '%Y-%m-%d')
         # 比较时间,如果当前时间大于上次发布时间,则返回True
         if self.last_publish_time > datetime_object:
