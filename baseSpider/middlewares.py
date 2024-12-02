@@ -124,28 +124,53 @@ class BaseHeaderMiddleware:
 
 
 class PlaywrightMiddleware:
-   
+    def __init__(self):
+        self.playwright = None
+        self.browser = None
+
+    async def _initialize(self):
+        if not self.playwright:
+            self.playwright = await async_playwright().start()
+            self.browser = await self.playwright.chromium.launch(headless=True)  # 无头模式
+
+    async def _block_resources(self, page):
+        await page.route("**/*", lambda route: route.continue_() if route.request.resource_type in ["document", "script", "xhr", "fetch"] else route.abort())
+
     async def _process_request(self, request, spider):
-        
         if not request.meta.get('use_playwright'):
             return None
-        
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)  # 无头模式
-            page = await browser.new_page()
-            await page.goto(request.url)
-            content = await page.content()
-            await browser.close()
 
-            return HtmlResponse(
-                request.url,
-                body=content.encode('utf-8'), 
-                encoding='utf-8',
-                request=request
-            )
+        await self._initialize()
+        page = await self.browser.new_page()
+        await self._block_resources(page)
+        await page.goto(request.url)
+        content = await page.content()
+        await page.close()
+
+        return HtmlResponse(
+            request.url,
+            body=content.encode('utf-8'), 
+            encoding='utf-8',
+            request=request
+        )
 
     def process_request(self, request, spider):
         return deferred_from_coro(self._process_request(request, spider))
+
+    async def close(self):
+        if self.browser:
+            await self.browser.close()
+        if self.playwright:
+            await self.playwright.stop()
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        middleware = cls()
+        crawler.signals.connect(middleware.spider_closed, signal=signals.spider_closed)
+        return middleware
+
+    async def spider_closed(self, spider):
+        await self.close()
 
 
 class BaseRetryMiddleware(RetryMiddleware):
