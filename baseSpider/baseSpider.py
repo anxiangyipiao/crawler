@@ -46,7 +46,7 @@ class BaseSpiderObject(scrapy.Spider):
     task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
     
 
-   # 定义要覆盖或添加的设置
+    # 定义要覆盖或添加的设置
     overrides_settings = {}
     custom_settings = {
             **overrides_settings,
