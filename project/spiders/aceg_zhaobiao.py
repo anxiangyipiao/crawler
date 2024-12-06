@@ -65,7 +65,7 @@ class ahhyzb(BaseSpiderObject):
                 'url': self.start_urls,
                 'method': 'post',
                 'request_body': 'json',
-                'meta': {'page': 1,},
+                'meta': {'page': 1,'use_playwright': True,},
                 'callback': self.parse,
                 'params': self.data
             }
