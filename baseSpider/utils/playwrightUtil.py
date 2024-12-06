@@ -72,14 +72,6 @@ with sync_playwright() as p:
 
 
 
-
-
-
-
-
-
-
-
 stealth_path = 'stealth.min.js'
 
 
