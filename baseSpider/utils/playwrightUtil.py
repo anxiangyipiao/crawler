@@ -1,4 +1,3 @@
-from playwright.sync_api import sync_playwright
 
 '''
 import subprocess
@@ -66,11 +65,7 @@ with sync_playwright() as p:
 
 '''
 
-
-
-
-
-
+from playwright.sync_api import sync_playwright
 
 stealth_path = 'stealth.min.js'
 
