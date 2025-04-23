@@ -1,11 +1,6 @@
 Metadata-Version: 2.1
 Name: baseSpider
-Version: 1.0.3
+Version: 1.0.5
 Summary: Base spider needed by all other spiders overfall.
 Author: EastonLee
 Author-email: appelapp2017@outlook.com
-Requires-Dist: fake_useragent
-Requires-Dist: playwright
-Requires-Dist: redis
-Requires-Dist: ddddocr
-Requires-Dist: requests
