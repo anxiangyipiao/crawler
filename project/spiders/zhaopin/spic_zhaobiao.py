@@ -4,7 +4,7 @@ from baseSpider.baseSpider import BaseSpiderObject,RequestItem
 # 建设工程
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
-    name = "spic_zhaobiao"
+    name = "spic_zhaopin"
     start_urls = [
         'http://www.spic.com.cn/2021/jrwm/index.html',
         # 'https://www.zybtp.com/hcggg/index_{page}.jhtml',
@@ -19,6 +19,8 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     county = ""  # 选填，爬虫区/县
     site_name = '国家电投'
     source = 'www.spic.com.cn'
+
+    timeRange = 7
 
 
     def start_requests(self):
@@ -73,5 +75,25 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
                 }
         # 翻页
         yield self.request_next_page(baseItem, page, request_params)
-             
-  
+
+
+    def parse_html(self,response,item):
+        """
+        解析HTML响应并填充item对象。
+        
+        Args:
+            response (Response): Scrapy的Response对象，包含网页的响应内容。
+            item (BaseItem): 需要填充数据的item对象。
+        
+        Returns:
+            BaseItem: 填充了网页内容的item对象。
+        
+        """
+        
+        try:
+            item['contents'] = ''.join(response.xpath('//div[@class="details_wrap"]//text()').getall()).strip()
+            return item
+
+        except Exception as e:
+
+            return None
