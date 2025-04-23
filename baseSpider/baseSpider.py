@@ -1,5 +1,7 @@
 import inspect
 import json
+import random
+import time
 from scrapy.exceptions import CloseSpider
 import scrapy
 from baseSpider.utils.BloomFilter import bloomFilter
@@ -578,6 +580,8 @@ class BaseSpiderObject(scrapy.Spider):
             self.insert_task_log()
 
     def parse_task(self,tasks:RequestItem):
+
+        time.sleep(random.randint(1, 3))
 
         if tasks['method'].upper() == 'GET':
 
