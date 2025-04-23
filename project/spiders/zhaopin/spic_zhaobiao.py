@@ -7,10 +7,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     name = "spic_zhaopin"
     start_urls = [
         'http://www.spic.com.cn/2021/jrwm/index.html',
-        # 'https://www.zybtp.com/hcggg/index_{page}.jhtml',
-        # 'https://www.zybtp.com/gczb/index_{page}.jhtml',
-        # 'https://www.zybtp.com/hwzb/index_{page}.jhtml',
-        # 'https://www.zybtp.com/fwzb/index_{page}.jhtml'
+       
     ]
     next_base_urls = 'http://www.spic.com.cn/2021/jrwm/index_{page}.html#pages'
     contents_base_urls = ''  # 用于拼接详情页网址
@@ -91,7 +88,19 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         """
         
         try:
-            item['contents'] = ''.join(response.xpath('//div[@class="details_wrap"]//text()').getall()).strip()
+
+            # 提取文本内容
+            text_content = ''.join(response.xpath('//div[@class="details_wrap"]//text()').getall()).strip()
+
+            # 提取附件链接
+            attachment_links = response.xpath('//div[@class="details_wrap"]//a/@href').getall()
+
+            # 将文本内容和附件链接组合
+            item['contents'] = {
+                'text': text_content,
+                'attachments': attachment_links
+            }
+                     
             return item
 
         except Exception as e:
