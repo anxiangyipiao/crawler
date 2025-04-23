@@ -29,7 +29,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
             request_params = {
                 'url': url,
                 'method': 'GET',
-                'meta': {'page': 1},
+                'meta': {'page': 0},
                 'callback': self.parse,
                 'params': None
             }
@@ -65,9 +65,9 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         # 翻页,需要构建新的请求参数
         page += 1
         request_params = {
-                    'url': param.format(page=page),
+                    'url': self.next_base_urls.format(page=page),
                     'method': 'GET',
-                    'meta': {'page': page, 'param': param},
+                    'meta': {'page': page},
                     'callback': self.parse,
                     'params': None
                 }
