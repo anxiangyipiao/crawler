@@ -14,3 +14,4 @@ baseSpider/utils/BloomFilter.py
 baseSpider/utils/Ocr.py
 baseSpider/utils/RedisManage.py
 baseSpider/utils/__init__.py
+baseSpider/utils/playwrightUtil.py
