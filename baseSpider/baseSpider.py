@@ -419,6 +419,10 @@ class BaseSpiderObject(scrapy.Spider):
 
         data = self.task_redis_server.hgetall(key)
 
+        if not data:
+            logger.error("Read source log error")
+            return None
+
         # 转为字典
         return {
             'name': data[b'name'].decode('utf-8'),
