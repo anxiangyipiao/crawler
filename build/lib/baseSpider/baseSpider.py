@@ -42,7 +42,7 @@ class BaseSpiderObject(scrapy.Spider):
     max_failures = 10 # 最大失败数量
 
     # stop_flag = False      # 终止标识
-    task_redis_server = RedisConnectionManager.get_connection(db=0) # Redis连接
+    task_redis_server = RedisConnectionManager.get_connection() # Redis连接
     
 
     # 定义要覆盖或添加的设置
@@ -419,6 +419,7 @@ class BaseSpiderObject(scrapy.Spider):
 
         data = self.task_redis_server.hgetall(key)
 
+       
         # 转为字典
         return {
             'name': data[b'name'].decode('utf-8'),
