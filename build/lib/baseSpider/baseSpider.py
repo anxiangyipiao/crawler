@@ -419,24 +419,23 @@ class BaseSpiderObject(scrapy.Spider):
 
         data = self.task_redis_server.hgetall(key)
 
-       
         # 转为字典
         return {
-            'name': data[b'name'].decode('utf-8'),
-            'source': data[b'source'].decode('utf-8'),
-            'site_name': data[b'site_name'].decode('utf-8'),
+            'name': data['name'],
+            'source': data['source'],
+            'site_name': data['site_name'],
             'state': 'failure',
-            'last_publish_time': data[b'last_publish_time'].decode('utf-8'),
-            'today_all_request': int(data[b'today_all_request'].decode('utf-8')),
-            'today_success_request': int(data[b'today_success_request'].decode('utf-8')),
-            'today_fail_request': int(data[b'today_fail_request'].decode('utf-8')),
-            'this_time_all_request': int(data[b'this_time_all_request'].decode('utf-8')),
-            'this_time_success_request': int(data[b'this_time_success_request'].decode('utf-8')),
-            'this_time_fail_request': int(data[b'this_time_fail_request'].decode('utf-8')),
-            'last_time': data[b'last_time'].decode('utf-8'),
-            'run_time': data[b'run_time'].decode('utf-8'),
-            'crawl_count': int(data[b'crawl_count'].decode('utf-8')),
-            'failed_urls':  json.loads(data[b'failed_urls'].decode('utf-8'))
+            'last_publish_time': data['last_publish_time'],
+            'today_all_request': int(data['today_all_request']),
+            'today_success_request': int(data['today_success_request']),
+            'today_fail_request': int(data['today_fail_request']),
+            'this_time_all_request': int(data['this_time_all_request']),
+            'this_time_success_request': int(data['this_time_success_request']),
+            'this_time_fail_request': int(data['this_time_fail_request']),
+            'last_time': data['last_time'],
+            'run_time': data['run_time'],
+            'crawl_count': int(data['crawl_count']),
+            'failed_urls':  json.loads(data['failed_urls'])
         }
   
     def write_source_log(self,key,data:dict):

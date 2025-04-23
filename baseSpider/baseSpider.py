@@ -419,7 +419,6 @@ class BaseSpiderObject(scrapy.Spider):
 
         data = self.task_redis_server.hgetall(key)
 
-       
         # 转为字典
         return {
             'name': data['name'],
