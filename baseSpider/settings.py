@@ -33,7 +33,7 @@ CONCURRENT_REQUESTS_PER_IP = 10
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 2
+DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -113,10 +113,10 @@ FEED_EXPORT_ENCODING = "utf-8"
 
 
 # 测试
-REDIS_HOST = "139.224.244.220"
+REDIS_HOST = "121.37.171.89"
 REDIS_PORT = 6379
-REDIS_PASSWORD = "zax123456"
-REDIS_DB = 0
+REDIS_PASSWORD = "123456zax"
+REDIS_DB = 2
 
 
 # rabbitmq
@@ -128,11 +128,11 @@ RABBITMQ_VHOST = "/"
 RABBITMQ_EXCHANGE = ""
 
 # mysql
-MYSQL_HOST = "58.213.106.158"
-MYSQL_PORT = 36000
-MYSQL_USER = "bidspider2"
-MYSQL_PASSWORD = "cSFbhtFencqH3knm"
-MYSQL_DB = "bidSpider2"
+MYSQL_HOST = "121.37.171.89"
+MYSQL_PORT = 3306
+MYSQL_USER = "root"
+MYSQL_PASSWORD = "123456zax"
+MYSQL_DB = "zhaopin"
 
 
 

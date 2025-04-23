@@ -2,7 +2,6 @@ import requests
 import ddddocr
 
 
-
 # 使用 ddddocr 进行 OCR 识别
 ocr = ddddocr.DdddOcr()
 

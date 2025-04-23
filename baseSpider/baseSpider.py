@@ -28,8 +28,7 @@ class BaseSpiderObject(scrapy.Spider):
     page_over = False # 翻页
     current_directory = None
     
-
-    timeRange = 0
+    timeRange = 1 # 爬虫时间范围，单位为天,0为当天，1为前一天，2为前两天，3为前三天，4为前四天，5为前五天，6为前六天，7为前七天
     crawl_today = datetime.now() # 爬虫开始时间
     last_publish_time = None # 最新发布时间
 
@@ -59,7 +58,7 @@ class BaseSpiderObject(scrapy.Spider):
                 "baseSpider.pipelines.baseSpiderPipeline": 300,
             },
             'ROBOTSTXT_OBEY': False,
-            'DOWNLOAD_DELAY': 2,
+            'DOWNLOAD_DELAY': 3,
             'CONCURRENT_REQUESTS_PER_IP': 8,
             'RETRY_ENABLED': True,
             'RETRY_TIMES': 2,
@@ -148,6 +147,7 @@ class BaseSpiderObject(scrapy.Spider):
             number = re.search(r'\d{4}-\d{2}-\d{2}', string).group()
         except:
             number = None
+
         return number
 
     def format_time(self, publish_time)->datetime:
@@ -335,7 +335,6 @@ class BaseSpiderObject(scrapy.Spider):
 
         # 计算任务数量
         try:    
-    
                 self.insertCount += 1
                 self.failed_urls.append(task['url'])
 
