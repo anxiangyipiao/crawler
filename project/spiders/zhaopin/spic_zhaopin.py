@@ -13,8 +13,8 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     ]
     next_base_urls = 'http://www.spic.com.cn/2021/jrwm/index_{page}.html#pages'
     contents_base_urls = ''  # 用于拼接详情页网址
-    province = "山东省"  # 必填，爬虫省份
-    city = "济南市"  # 必填，爬虫城市
+    province = ""  # 必填，爬虫省份
+    city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
     site_name = '国家电投'
     source = 'www.spic.com.cn'
