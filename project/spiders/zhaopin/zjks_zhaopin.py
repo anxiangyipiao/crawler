@@ -17,6 +17,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     source = 'gwy.zjks.com'
 
     timeRange = 7
+    max_page = 1
 
 
     params = {
@@ -81,7 +82,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
             baseItem['url'] = node.xpath('./a/@onclick').extract_first().strip()
    
-        
             request_params = {
                     'url': 'http://gwy.zjks.com/zjgwy/website/queryDetail.htm',
                     'meta': {'item': baseItem},
@@ -106,17 +106,17 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
                 yield self.parse_task(RequestItem(**request_params))
          
  
-        # # 翻页,需要构建新的请求参数
-        # page += 1
-        # request_params = {
-        #             'url': self.next_base_urls.format(page=page),
-        #             'method': 'GET',
-        #             'meta': {'page': page},
-        #             'callback': self.parse,
-        #             'params': None
-        #         }
-        # # 翻页
-        # yield self.request_next_page(baseItem, page, request_params)
+        # 翻页,需要构建新的请求参数
+        page += 1
+        request_params = {
+                    'url': self.next_base_urls.format(page=page),
+                    'method': 'GET',
+                    'meta': {'page': page},
+                    'callback': self.parse,
+                    'params': None
+                }
+        # 翻页
+        yield self.request_next_page(baseItem, page, request_params)
 
 
     def parse_html(self,response,item):
