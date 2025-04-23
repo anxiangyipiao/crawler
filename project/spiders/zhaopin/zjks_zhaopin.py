@@ -33,7 +33,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         "Cache-Control": "no-cache",
         "Connection": "keep-alive",
         "Content-Type": "application/x-www-form-urlencoded",
-        "Cookie": "JSESSIONID=64F8E6AFBF900CC9113258FE18AD5404; acw_tc=0bdd34b217454126841122912ebf2322aeb5da33c579478f4e3a185717c5fd; JSESSIONID=B75228942EF5C82D87396D9969A22922; SERVERID=bcd5e2e2581f61b4951db1c43a4b1a8c|1745413558|1745412684",
         "DNT": "1",
         "Host": "gwy.zjks.com",
         "Origin": "http://gwy.zjks.com",
@@ -43,7 +42,9 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     }
 
 
-    dsdms = ['133','13301','13302','13303','13304','13305','13306','13307','13308','13309','13310','13311']
+    dsdms = [
+                '133','13301','13302','13303','13304','13305','13306','13307','13308','13309','13310','13311'
+            ]
 
 
     def start_requests(self):
@@ -68,8 +69,8 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         page = response.meta['page']
         dsdm = response.meta['dsdm']
 
-        node_list  = response.xpath('//div[@class="ibox-content"]/tr')
- 
+        node_list  = response.xpath('//div[@class="ibox-content"]//tbody/tr')
+
         for node in node_list:
 
             baseItem = self.get_base_item()
@@ -77,10 +78,10 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
             baseItem['publish_time'] = node.xpath('./td[2]/text()').extract_first().strip()
 
 
-            mkxh = node.xpath('.//a/@onclick').extract().strip().split('\'')[1]
-            tzid = node.xpath('.//a/@onclick').extract().strip().split('\'')[3]
+            mkxh = node.xpath('.//a/@onclick').extract_first().strip().split('\'')[1]
+            tzid = node.xpath('.//a/@onclick').extract_first().strip().split('\'')[3]
 
-            baseItem['url'] = node.xpath('./a/@onclick').extract_first().strip()
+            baseItem['url'] = node.xpath('.//a/@onclick').extract_first().strip()
    
             request_params = {
                     'url': 'http://gwy.zjks.com/zjgwy/website/queryDetail.htm',
