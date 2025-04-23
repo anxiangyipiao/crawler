@@ -1,7 +1,9 @@
 
 from baseSpider.baseSpider import BaseSpiderObject,RequestItem
+from urllib.parse import urljoin
 
-# 建设工程
+
+
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "spic_zhaopin"
@@ -45,7 +47,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
             baseItem = self.get_base_item()
             baseItem['title'] = node.xpath('.//h6/text()').extract_first().strip()
             baseItem['publish_time'] = node.xpath('.//p/text()').extract_first().strip()
-            baseItem['url'] = self.contents_base_urls + node.xpath('./a/@href').extract_first().strip()
+            baseItem['url'] = urljoin(response.url,node.xpath('./a/@href').extract_first().strip())
    
             request_params = {
                     'url': baseItem['url'],
@@ -92,13 +94,16 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
             # 提取文本内容
             text_content = ''.join(response.xpath('//div[@class="details_wrap"]//text()').getall()).strip()
 
-            # 提取附件链接
+           # 提取附件链接
             attachment_links = response.xpath('//div[@class="details_wrap"]//a/@href').getall()
+
+            # 将相对路径转换为完整的 URL
+            full_attachment_links = [urljoin(response.url, link) for link in attachment_links]
 
             # 将文本内容和附件链接组合
             item['contents'] = {
                 'text': text_content,
-                'attachments': attachment_links
+                'attachments': full_attachment_links
             }
                      
             return item
