@@ -18,7 +18,7 @@ class RedisConnectionManager:
     def get_connection(cls,db=REDIS_DB):
         return redis.Redis(connection_pool=cls.get_pool(db))
     
-
+   
    
        
 
