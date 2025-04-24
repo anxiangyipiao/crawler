@@ -728,7 +728,7 @@ class BaseSpiderObject(scrapy.Spider):
         
         try:
            
-            xpath = '//div[@class="newslistbox"]'
+            xpath = '//body'
 
             # 提取文本内容
             item = self.parse_contents_with_xpath(response, item, xpath)
