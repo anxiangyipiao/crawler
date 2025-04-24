@@ -26,7 +26,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
         for url in self.start_urls:
 
-           
             request_params = {
                 'url': url,
                 'method': 'GET',

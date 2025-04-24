@@ -130,7 +130,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
            # 提取附件链接
             attachment_links = response.xpath('//div[@class="newslistbox"]//a/@href').getall()
 
-            if  attachment_links.startwith('http'):
+            if attachment_links.startwith('http'):
                 # 如果链接是完整的，则直接使用
                 full_attachment_links = attachment_links
 
