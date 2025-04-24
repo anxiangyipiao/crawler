@@ -165,6 +165,50 @@ class BaseSpiderObject(scrapy.Spider):
         
         """
         
+        # if '/' in publish_time:
+        #     publish_time = publish_time.replace('/', '-')
+        # if ' ' in publish_time:
+        #     publish_time = publish_time.replace(' ', '')
+        # if '.' in publish_time:
+        #     publish_time = publish_time.replace('.', '-')
+        # if '[' in publish_time:
+        #     publish_time = publish_time.replace('[', '')
+        # if ']' in publish_time:
+        #     publish_time = publish_time.replace(']', '')
+        # if '年' in publish_time:
+        #     publish_time = publish_time.replace('年', '-')    
+        # if '月' in publish_time:
+        #     publish_time = publish_time.replace('月', '-')
+        # if '日' in publish_time:
+        #     publish_time = publish_time.replace('日', '')
+
+
+        # publish_time = self.extract_number(publish_time)
+
+        # if len(publish_time) > 10:
+        #     publish_time = publish_time[:10]
+
+        try:
+            time = datetime.strptime(str(publish_time), '%Y-%m-%d')
+
+        except:
+
+            logger.error("Time format error")
+
+        return time
+    
+    def format_time_to_str(self, publish_time)->str:
+        """
+        格式化时间字符串，将发布时间转换为 datetime 对象。
+        
+        Args:
+            publish_time (str): 发布时间字符串，格式为年月日时分秒或年月日等。
+        
+        Returns:
+            datetime: 格式化后的 str 对象，格式为 '%Y-%m-%d'。
+        
+        """
+        
 
         if '/' in publish_time:
             publish_time = publish_time.replace('/', '-')
@@ -190,14 +234,12 @@ class BaseSpiderObject(scrapy.Spider):
             publish_time = publish_time[:10]
 
         try:
-            time = datetime.strptime(str(publish_time), '%Y-%m-%d')
+            return publish_time
 
         except:
 
             logger.error("Time format error")
-
-        return time
-    
+   
     def is_url_having(self, url:str)->bool:
         """
         判断给定的URL是否在布隆过滤器中。
@@ -231,7 +273,7 @@ class BaseSpiderObject(scrapy.Spider):
         判断当前时间是否超过了发布时间所指定的时间限制
         
         Args:
-            publishTime (str): 发布时间，格式为"%Y-%m-%d %H:%M:%S"
+            publishTime (str): 发布时间，格式为"%Y-%m-%d"
         
         Returns:
             bool: 如果当前时间超过了发布时间所指定的时间限制，返回True；否则返回False
@@ -752,7 +794,6 @@ class BaseSpiderObject(scrapy.Spider):
             # 根据需要决定是否返回 None 或带有部分数据的 item
             # 为了保持原逻辑，这里返回 None
             return None
-
 
     def parse_json(self,response,item:BaseItem)->BaseItem:
         """
