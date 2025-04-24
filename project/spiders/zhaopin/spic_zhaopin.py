@@ -90,22 +90,14 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         
         try:
 
+            # 提取详情页的xpath
+            xpath = '//div[@class="details_wrap"]'
+
             # 提取文本内容
-            text_content = ''.join(response.xpath('//div[@class="details_wrap"]//text()').getall()).strip()
+            item = self.parse_contents_with_xpath(response, item, xpath)
 
-           # 提取附件链接
-            attachment_links = response.xpath('//div[@class="details_wrap"]//a/@href').getall()
-
-            # 将相对路径转换为完整的 URL
-            full_attachment_links = [urljoin(response.url, link) for link in attachment_links]
-
-            # 将文本内容和附件链接组合
-            item['contents'] = {
-                'text': text_content,
-                'attachments': full_attachment_links
-            }
-                     
             return item
+
 
         except Exception as e:
 
