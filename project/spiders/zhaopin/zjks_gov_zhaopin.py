@@ -2,18 +2,20 @@
 from baseSpider.baseSpider import BaseSpiderObject,RequestItem
 from urllib.parse import urljoin
 import re
+from scrapy.selector import Selector # 导入 Selector
 
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
-    name = "mzhtcm_zhaopin"
-    start_urls = 'https://www.mzhtcm.com/rlzy/rczp/{type}.html'
-    next_base_urls = 'https://hrss.yn.gov.cn/NewsLsit.aspx?ClassID={type}&page={page}'
+    name = "zjks_gov_zhaopin"
+    start_urls = 'http://www.zjks.com/col/{type}/index.html?uid=7625449&pageNum=1'
+    
+    next_base_urls = 'http://www.zjks.com/col/{type}/index.html?uid=7625449&pageNum={page}'
     contents_base_urls = ''  # 用于拼接详情页网址
-    province = "广州"  # 必填，爬虫省份
+    province = "浙江省"  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
-    site_name = '广州中医药大学梅州医院'
-    source = 'www.mzhtcm.com'
+    site_name = '浙江人事考试网'
+    source = 'www.zjks.com'
 
     timeRange = 7
     max_page = 1
@@ -33,7 +35,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     }
 
 
-    lis = ['128']
+    lis = ['col1229635556','col1229635561']
 
     
     def start_requests(self):
@@ -51,18 +53,33 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
             yield self.parse_task(RequestItem(**request_params))
 
     
+    def extracr_node_list(self, response):
+
+        text = re.search(r'<recordset>(.*)</recordset>', response.text, re.DOTALL | re.IGNORECASE).group(1).strip()
+
+        # <record><![CDATA[ , ]]></record> 去除
+        text = text.replace('<record><![CDATA[','').replace(']]></record>','')
+
+        selector = Selector(text=text)
+
+        # 提取所有的 <li> 节点
+        node_list = selector.xpath('//li')
+
+        return node_list
+
 
     def parse(self, response):
         
         page = response.meta['page']
 
-        node_list  = response.xpath('//div[@class="list_box"]/ul/li')
- 
+        # 提取数据
+        node_list = self.extracr_node_list(response)
+
         for node in node_list:
 
             baseItem = self.get_base_item()
-            baseItem['title'] = node.xpath('./a/text()').extract_first().strip()
-            baseItem['publish_time'] =self.format_time_to_str(node.xpath('.//span[@class="date"]/text()').extract_first().strip())
+            baseItem['title'] = node.xpath('.//a/@title').extract_first().strip()
+            baseItem['publish_time'] = self.format_time_to_str(node.xpath('.//span/text()').extract_first().strip())
             baseItem['url'] = urljoin(response.url,node.xpath('./a/@href').extract_first().strip())
    
             request_params = {
@@ -109,7 +126,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         try:
 
              # 提取详情页的xpath
-            xpath = '//div[@class="show"]'
+            xpath = '//div[@class="content"]'
 
             # 提取文本内容
             item = self.parse_contents_with_xpath(response, item, xpath)

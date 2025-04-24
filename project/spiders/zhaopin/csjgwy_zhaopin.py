@@ -13,7 +13,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     province = ""  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
-    site_name = '长三角'
+    site_name = '长三角公务员考录一体化平台'
     source = 'www.csjgwy.com'
 
     timeRange = 7
