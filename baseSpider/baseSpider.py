@@ -208,8 +208,10 @@ class BaseSpiderObject(scrapy.Spider):
             datetime: 格式化后的 str 对象，格式为 '%Y-%m-%d'。
         
         """
-        
-
+        if '(' in publish_time:
+            publish_time = publish_time.replace('(', '-')
+        if ')' in publish_time:
+            publish_time = publish_time.replace(')', '-')
         if '/' in publish_time:
             publish_time = publish_time.replace('/', '-')
         if ' ' in publish_time:
