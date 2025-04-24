@@ -175,20 +175,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         
         try:
 
-            # # 提取文本内容
-            # text_content = ''.join(response.xpath('//div[@class="rsb_ejDetail_cont"]//text()').getall()).strip()
-
-            # # 提取附件链接
-            # attachment_links = response.xpath('//div[@class="rsb_ejDetail_cont"]//a/@href').getall()
-
-            # # 将文本内容和附件链接组合
-            # item['contents'] = {
-            #     'text': text_content,
-            #     'attachments': attachment_links
-            # }
-                     
-            # return item
-
              # 提取详情页的xpath
             xpath = '//div[@class="rsb_ejDetail_cont"]'
 

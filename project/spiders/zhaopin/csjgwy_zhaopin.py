@@ -43,7 +43,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
     def start_requests(self):
 
-       
             request_params = {
                 'url': self.start_urls,
                 'method': 'POST',
@@ -123,29 +122,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         """
         
         try:
-
-        #     # 提取文本内容
-        #     text_content = ''.join(response.xpath('//div[@class="newslistbox"]//text()').getall()).strip()
-
-        #    # 提取附件链接
-        #     attachment_links = response.xpath('//div[@class="newslistbox"]//a/@href').getall()
-
-        #     if attachment_links.startwith('http'):
-        #         # 如果链接是完整的，则直接使用
-        #         full_attachment_links = attachment_links
-
-        #     else:
-        #         # 将相对路径转换为完整的 URL
-        #         full_attachment_links = [urljoin(response.url, link) for link in attachment_links]
-
-        #     # 将文本内容和附件链接组合
-        #     item['contents'] = {
-        #         'text': text_content,
-        #         'attachments': full_attachment_links
-        #     }
-                     
-        #     return item
-
 
             # 提取详情页的xpath
             xpath = 'div[@class="newslistbox"]'
