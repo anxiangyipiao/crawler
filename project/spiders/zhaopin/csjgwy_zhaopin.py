@@ -64,7 +64,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
             baseItem = self.get_base_item()
             baseItem['title'] = node.xpath('.//a/text()').extract_first().strip()
-            baseItem['publish_time'] =self.format_time_to_str(node_list_time[index].xpath('./text()').extract_first().strip())
+            baseItem['publish_time'] = self.format_time_to_str(node_list_time[index].xpath('./text()').extract_first().strip())
 
 
             tzid = node.xpath('.//a/@onclick').extract_first().strip().split('\'')[1]

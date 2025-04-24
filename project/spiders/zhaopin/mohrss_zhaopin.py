@@ -116,7 +116,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
             baseItem = self.get_base_item()
             baseItem['title'] = node.xpath('.//a/text()').extract_first().strip()
-            baseItem['publish_time'] = node.xpath('.//span/text()').extract_first().strip()
+            baseItem['publish_time'] =self.format_time_to_str(node.xpath('.//span/text()').extract_first().strip())
             baseItem['url'] = urljoin(response.url,node.xpath('./a/@href').extract_first().strip())
    
             request_params = {
