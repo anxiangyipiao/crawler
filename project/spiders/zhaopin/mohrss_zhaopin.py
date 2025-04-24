@@ -22,6 +22,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     source = 'www.mohrss.gov.cn'
 
     timeRange = 7
+    max_page = 1
 
 
 
@@ -43,65 +44,34 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
 
     def generate_cookies(self,WTKkN,bOYDu,wyeCN,increment):
-        # JavaScript 逻辑翻译为 Python
-        def a(index):
-            def n():
-                t = ""
-                t += "EO_Bot_Ssid="
-                t = str(int(t) + increment)  # 3486711808 是 JavaScript 中的常量
-                return t
 
-            e = {
-                "WTKkN": WTKkN,
-                "bOYDu": bOYDu,
-                "dtzqS": lambda a, n: a + n,
-                "wyeCN": wyeCN,
-                "pCQRM": lambda func: func()
-            }
-            t = 0
-            t += e["WTKkN"]
-            t += e["bOYDu"]
-            t = e["dtzqS"](t, e["wyeCN"])
-            return [t, e["pCQRM"](n)][index]
+        tst_status = WTKkN + bOYDu + wyeCN
 
-        # 生成 cookies
-        __tst_status = a(0)  # 对应 JavaScript 中的 a(0)
-        EO_Bot_Ssid = a(1)   # 对应 JavaScript 中的 a(1)
+        EO_Bot_Ssid = increment
 
-        # 返回 cookies 字典
         return {
-            "__tst_status": f"{__tst_status}#",
+            "__tst_status": f"{tst_status}#",
             "EO_Bot_Ssid": EO_Bot_Ssid
         }
 
-    def extract_variables(self,js_code):
+    def extract_variables(self,javascript_code):
         """
         从 JavaScript 代码中提取变量值
         """
-        variables = {}
 
-        # 提取 WTKkN
-        match = re.search(r'"WTKkN":\s*(\d+)', js_code)
-        if match:
-            variables["WTKkN"] = int(match.group(1))
-
-        # 提取 bOYDu
-        match = re.search(r'"bOYDu":\s*(\d+)', js_code)
-        if match:
-            variables["bOYDu"] = int(match.group(1))
-
-        # 提取 wyeCN
-        match = re.search(r'"wyeCN":\s*(\d+)', js_code)
-        if match:
-            variables["wyeCN"] = int(match.group(1))
+        match_wtkkn = re.search(r"WTKkN\s*:\s*(\d+)", javascript_code).group(1)
+        # 查找 bOYDu: 后面的数字
+        match_boydu = re.search(r"bOYDu\s*:\s*(\d+)", javascript_code).group(1)
+        # 查找 wyeCN: 后面的数字
+        match_wyecn = re.search(r"wyeCN\s*:\s*(\d+)", javascript_code).group(1)
 
         # 提取 EO_Bot_Ssid 增量值
-        match = re.search(r't\s*=\s*str\(int\(t\)\s*\+\s*(\d+)\)', js_code)
-        if match:
-            variables["EO_Bot_Ssid_increment"] = int(match.group(1))
+        regex = r'case\s*"3":.*?\(t,\s*(\d+)\s*\);'
+        match = re.search(regex, javascript_code, re.DOTALL).group(1)
 
-        return variables
-
+        # 返回提取的变量值
+        return int(match_wtkkn), int(match_boydu), int(match_wyecn), int(match)
+  
 
     def start_requests(self):
 
@@ -118,24 +88,19 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
             yield self.parse_task(RequestItem(**request_params))
 
 
-
     def parse_cookies(self, response):
 
-        print(response.text)
-
         # 提取变量值
-        variables = self.extract_variables(response.text)
+        wtkkn, bOYDu, wyeCN, increment = self.extract_variables(response.text)
 
         # 生成 cookies
         cookies = self.generate_cookies(
-            variables["WTKkN"],
-            variables["bOYDu"],
-            variables["wyeCN"],
-            variables["EO_Bot_Ssid_increment"]
+            WTKkN=wtkkn,
+            bOYDu=bOYDu,
+            wyeCN=wyeCN,
+            increment=increment
         )
 
-
-        print(cookies)
 
         request_params = {
                 'url': response.url,
@@ -155,8 +120,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         
         page = response.meta['page']
 
-        print(response.text)
-
         node_list  = response.xpath('//ul[@class="rsb_ej_zpggList"]/li')
  
         for node in node_list:
@@ -172,6 +135,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
                     'callback': self.parse_content_detal,
                     'errback': self.errback_httpbin,
                     'headers':self.headers,
+                    'cookies': response.request.cookies,
                 }
 
              # 判断是否继续爬取
@@ -190,6 +154,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
                     'callback': self.parse,
                     'params': None,
                     'headers':self.headers,
+                    'cookies': response.request.cookies,
                 }
         # 翻页
         yield self.request_next_page(baseItem, page, request_params)
