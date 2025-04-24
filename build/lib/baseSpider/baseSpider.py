@@ -1,5 +1,8 @@
 import inspect
 import json
+import random
+import time
+from urllib.parse import urljoin
 from scrapy.exceptions import CloseSpider
 import scrapy
 from baseSpider.utils.BloomFilter import bloomFilter
@@ -162,6 +165,50 @@ class BaseSpiderObject(scrapy.Spider):
         
         """
         
+        # if '/' in publish_time:
+        #     publish_time = publish_time.replace('/', '-')
+        # if ' ' in publish_time:
+        #     publish_time = publish_time.replace(' ', '')
+        # if '.' in publish_time:
+        #     publish_time = publish_time.replace('.', '-')
+        # if '[' in publish_time:
+        #     publish_time = publish_time.replace('[', '')
+        # if ']' in publish_time:
+        #     publish_time = publish_time.replace(']', '')
+        # if '年' in publish_time:
+        #     publish_time = publish_time.replace('年', '-')    
+        # if '月' in publish_time:
+        #     publish_time = publish_time.replace('月', '-')
+        # if '日' in publish_time:
+        #     publish_time = publish_time.replace('日', '')
+
+
+        # publish_time = self.extract_number(publish_time)
+
+        # if len(publish_time) > 10:
+        #     publish_time = publish_time[:10]
+
+        try:
+            time = datetime.strptime(str(publish_time), '%Y-%m-%d')
+
+        except:
+
+            logger.error("Time format error")
+
+        return time
+    
+    def format_time_to_str(self, publish_time)->str:
+        """
+        格式化时间字符串，将发布时间转换为 datetime 对象。
+        
+        Args:
+            publish_time (str): 发布时间字符串，格式为年月日时分秒或年月日等。
+        
+        Returns:
+            datetime: 格式化后的 str 对象，格式为 '%Y-%m-%d'。
+        
+        """
+        
 
         if '/' in publish_time:
             publish_time = publish_time.replace('/', '-')
@@ -187,14 +234,12 @@ class BaseSpiderObject(scrapy.Spider):
             publish_time = publish_time[:10]
 
         try:
-            time = datetime.strptime(str(publish_time), '%Y-%m-%d')
+            return publish_time
 
         except:
 
             logger.error("Time format error")
-
-        return time
-    
+   
     def is_url_having(self, url:str)->bool:
         """
         判断给定的URL是否在布隆过滤器中。
@@ -228,7 +273,7 @@ class BaseSpiderObject(scrapy.Spider):
         判断当前时间是否超过了发布时间所指定的时间限制
         
         Args:
-            publishTime (str): 发布时间，格式为"%Y-%m-%d %H:%M:%S"
+            publishTime (str): 发布时间，格式为"%Y-%m-%d"
         
         Returns:
             bool: 如果当前时间超过了发布时间所指定的时间限制，返回True；否则返回False
@@ -579,6 +624,8 @@ class BaseSpiderObject(scrapy.Spider):
 
     def parse_task(self,tasks:RequestItem):
 
+        time.sleep(random.randint(1, 3))
+
         if tasks['method'].upper() == 'GET':
 
             if tasks['params'] is None:
@@ -680,22 +727,74 @@ class BaseSpiderObject(scrapy.Spider):
         """
         
         try:
-            if response.xpath('//iframe'):
-                # 获取pdf文件地址
-                req_url = response.xpath('//iframe/@src').extract_first()
-                item['contents'] = req_url
-            
-            else:
-                # 获取html页面内容
-                item['contents'] = response.text
+           
+            xpath = '//body'
+
+            # 提取文本内容
+            item = self.parse_contents_with_xpath(response, item, xpath)
+
 
             return item
+
 
         except Exception as e:
 
             logger.error("Parse content error",e)
             return None
         
+    def parse_contents_with_xpath(self,response,item:BaseItem,xpath:str)->BaseItem:
+        '''
+        使用传入的 xpath 提取内容和附件链接。
+
+        Args:
+            response: Scrapy 的 Response 对象。
+            item: 包含数据的 BaseItem 对象。
+            xpath: 用于定位主要内容区域的 XPath 表达式。
+
+        Returns:
+            更新后的 BaseItem 对象，如果出错则返回 None。
+        '''
+        try:
+            # 基于传入的 xpath 构建更具体的 xpath
+            text_xpath = f"{xpath}//text()"
+            attachment_xpath = f"{xpath}//a/@href"
+
+            # 提取文本内容
+            text_content = ''.join(response.xpath(text_xpath).getall()).strip()
+
+            # 提取附件链接
+            attachment_links = response.xpath(attachment_xpath).getall()
+
+            full_attachment_links = []
+            for link in attachment_links:
+                if link: # 确保链接不为空
+                    # 检查链接是否已经是完整的 URL
+                    if link.startswith('http://') or link.startswith('https://'):
+                        full_attachment_links.append(link)
+                    else:
+                        # 将相对路径转换为完整的 URL
+                        try:
+                            full_link = urljoin(response.url, link)
+                            full_attachment_links.append(full_link)
+                        except ValueError:
+                            # 处理无效的相对链接（可选）
+                            self.logger.warning(f"无法解析相对链接: {link} 在 {response.url}")
+                            pass # 或者记录错误，或者跳过
+
+            # 将文本内容和附件链接组合
+            item['contents'] = {
+                'text': text_content,
+                'attachments': full_attachment_links
+            }
+
+            return item
+
+        except Exception as e:
+            self.logger.error(f"使用 XPath '{xpath}' 解析内容时出错: {e} 在 {response.url}")
+            # 根据需要决定是否返回 None 或带有部分数据的 item
+            # 为了保持原逻辑，这里返回 None
+            return None
+
     def parse_json(self,response,item:BaseItem)->BaseItem:
         """
         解析JSON格式的响应数据，并将解析后的数据赋值给传入的item的'contents'字段
