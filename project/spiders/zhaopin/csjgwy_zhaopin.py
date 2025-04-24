@@ -30,7 +30,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         "Accept-Encoding": "gzip, deflate",
         "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
         "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
         "Content-Type": "application/x-www-form-urlencoded",
         "DNT": "1",
         "Host": "www.csjgwy.com",
