@@ -91,7 +91,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         try:
 
             # 提取详情页的xpath
-            xpath = '//div[@class="details_wrap"]'
+            xpath = '//div[@class="sr_c"]'
 
             # 提取文本内容
             item = self.parse_contents_with_xpath(response, item, xpath)
