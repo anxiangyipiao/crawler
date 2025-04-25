@@ -13,7 +13,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     province = ""  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
-    site_name = '长三角'
+    site_name = '长三角公务员考录一体化平台'
     source = 'www.csjgwy.com'
 
     timeRange = 7
@@ -30,7 +30,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         "Accept-Encoding": "gzip, deflate",
         "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
         "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
         "Content-Type": "application/x-www-form-urlencoded",
         "DNT": "1",
         "Host": "www.csjgwy.com",
@@ -65,7 +64,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
             baseItem = self.get_base_item()
             baseItem['title'] = node.xpath('.//a/text()').extract_first().strip()
-            baseItem['publish_time'] = node_list_time[index].xpath('./text()').extract_first().strip()
+            baseItem['publish_time'] = self.format_time_to_str(node_list_time[index].xpath('./text()').extract_first().strip())
 
 
             tzid = node.xpath('.//a/@onclick').extract_first().strip().split('\'')[1]

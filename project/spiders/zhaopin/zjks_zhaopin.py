@@ -10,7 +10,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     start_urls = 'http://gwy.zjks.com/zjgwy/website/queryMore.htm'
     next_base_urls = 'http://www.spic.com.cn/2021/jrwm/index_{page}.html#pages'
     contents_base_urls = ''  # 用于拼接详情页网址
-    province = ""  # 必填，爬虫省份
+    province = "浙江省"  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
     site_name = '浙江省公务员考试录用网'
@@ -31,7 +31,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         "Accept-Encoding": "gzip, deflate",
         "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
         "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
         "Content-Type": "application/x-www-form-urlencoded",
         "DNT": "1",
         "Host": "gwy.zjks.com",
@@ -76,7 +75,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
             baseItem = self.get_base_item()
             baseItem['title'] = node.xpath('.//a/text()').extract_first().strip()
-            baseItem['publish_time'] = node.xpath('./td[2]/text()').extract_first().strip()
+            baseItem['publish_time'] =self.format_time_to_str(node.xpath('./td[2]/text()').extract_first().strip())
 
 
             mkxh = node.xpath('.//a/@onclick').extract_first().strip().split('\'')[1]

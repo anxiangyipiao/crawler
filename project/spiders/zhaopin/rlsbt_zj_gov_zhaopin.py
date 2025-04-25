@@ -2,18 +2,20 @@
 from baseSpider.baseSpider import BaseSpiderObject,RequestItem
 from urllib.parse import urljoin
 import re
+from scrapy.selector import Selector # 导入 Selector
 
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
-    name = "mohrss_zhaopin"
-    start_urls = 'https://www.mohrss.gov.cn/SYrlzyhshbzb/fwyd/SYkaoshizhaopin/zyhgjjgsydwgkzp/{type}/index.html'
-    next_base_urls = 'https://www.mohrss.gov.cn/SYrlzyhshbzb/fwyd/SYkaoshizhaopin/zyhgjjgsydwgkzp/{type}/index_{page}.html'
+    name = "rlsbt_zj_gov_zhaopin"
+    start_urls = 'https://rlsbt.zj.gov.cn/col/{type}/index.html?uid=7382343&pageNum=1'
+    
+    next_base_urls = 'https://rlsbt.zj.gov.cn/col/{type}/index.html?uid=7382343&pageNum={page}'
     contents_base_urls = ''  # 用于拼接详情页网址
-    province = "国家"  # 必填，爬虫省份
+    province = "浙江省"  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
-    site_name = '中华人民共和国人力资源和社会保障部'
-    source = 'www.mohrss.gov.cn'
+    site_name = '浙江省人力资源和社会保障厅'
+    source = 'rlsbt.zj.gov.cn'
 
     timeRange = 7
     max_page = 1
@@ -21,7 +23,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'cache-control': 'no-cache',
-        'host': 'www.mohrss.gov.cn',
         'pragma': 'no-cache',
         'sec-ch-ua': '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
         'sec-ch-ua-mobile': '?0',
@@ -34,37 +35,9 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     }
 
 
-    lis = ['zpgg', 'gxbyszpzl', 'zytz']
+    lis = ['col1229743683','col1229116948']
 
-    def generate_cookies(self,WTKkN,bOYDu,wyeCN,increment):
-
-        tst_status = WTKkN + bOYDu + wyeCN
-
-        EO_Bot_Ssid = increment
-
-        return {
-            "__tst_status": f"{tst_status}#",
-            "EO_Bot_Ssid": EO_Bot_Ssid
-        }
-
-    def extract_variables(self,javascript_code):
-        """
-        从 JavaScript 代码中提取变量值
-        """
-
-        match_wtkkn = re.search(r"WTKkN\s*:\s*(\d+)", javascript_code).group(1)
-        # 查找 bOYDu: 后面的数字
-        match_boydu = re.search(r"bOYDu\s*:\s*(\d+)", javascript_code).group(1)
-        # 查找 wyeCN: 后面的数字
-        match_wyecn = re.search(r"wyeCN\s*:\s*(\d+)", javascript_code).group(1)
-
-        # 提取 EO_Bot_Ssid 增量值
-        regex = r'case\s*"3":.*?\(t,\s*(\d+)\s*\);'
-        match = re.search(regex, javascript_code, re.DOTALL).group(1)
-
-        # 返回提取的变量值
-        return int(match_wtkkn), int(match_boydu), int(match_wyecn), int(match)
-  
+    
     def start_requests(self):
 
         for type in self.lis:
@@ -72,52 +45,42 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
             request_params = {
                 'url': self.start_urls.format(type=type),
                 'method': 'GET',
-                'meta': {'page': 0, 'type': type},
-                'callback': self.parse_cookies,
+                'meta': {'page': 1, 'type': type},
+                'callback': self.parse,
                 'params': None,
                 'headers':self.headers,
             }
             yield self.parse_task(RequestItem(**request_params))
 
-    def parse_cookies(self, response):
+    
+    def extracr_node_list(self, response):
 
-        # 提取变量值
-        wtkkn, bOYDu, wyeCN, increment = self.extract_variables(response.text)
+        text = re.search(r'<recordset>(.*)</recordset>', response.text, re.DOTALL | re.IGNORECASE).group(1).strip()
 
-        # 生成 cookies
-        cookies = self.generate_cookies(
-            WTKkN=wtkkn,
-            bOYDu=bOYDu,
-            wyeCN=wyeCN,
-            increment=increment
-        )
+        # <record><![CDATA[ , ]]></record> 去除
+        text = text.replace('<record><![CDATA[','').replace(']]></record>','')
 
+        selector = Selector(text=text)
 
-        request_params = {
-                'url': response.url,
-                'method': 'GET',
-                'meta': response.meta,
-                'callback': self.parse,
-                'params': None,
-                'headers':self.headers,
-                'cookies': cookies,
-            }
-        
-        
-        yield self.parse_task(RequestItem(**request_params))
+        # 提取所有的 <li> 节点
+        node_list = selector.xpath('//li')
+
+        return node_list
+
 
     def parse(self, response):
         
         page = response.meta['page']
 
-        node_list  = response.xpath('//ul[@class="rsb_ej_zpggList"]/li')
- 
+        # 提取数据
+        node_list = self.extracr_node_list(response)
+
         for node in node_list:
 
             baseItem = self.get_base_item()
-            baseItem['title'] = node.xpath('.//a/text()').extract_first().strip()
-            baseItem['publish_time'] =self.format_time_to_str(node.xpath('.//span/text()').extract_first().strip())
-            baseItem['url'] = urljoin(response.url,node.xpath('./a/@href').extract_first().strip())
+            baseItem['title'] = node.xpath('.//a/@title').extract_first().strip()
+            baseItem['publish_time'] = self.format_time_to_str(node.xpath('.//span[@class="bt_time"]/text()').extract_first().strip())
+            baseItem['url'] = urljoin(response.url,node.xpath('.//a/@href').extract_first().strip())
    
             request_params = {
                     'url': baseItem['url'],
@@ -125,7 +88,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
                     'callback': self.parse_content_detal,
                     'errback': self.errback_httpbin,
                     'headers':self.headers,
-                    'cookies': response.request.cookies,
                 }
 
              # 判断是否继续爬取
@@ -144,7 +106,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
                     'callback': self.parse,
                     'params': None,
                     'headers':self.headers,
-                    'cookies': response.request.cookies,
                 }
         # 翻页
         yield self.request_next_page(baseItem, page, request_params)
@@ -165,7 +126,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         try:
 
              # 提取详情页的xpath
-            xpath = '//div[@class="rsb_ejDetail_cont"]'
+            xpath = '//div[@class="contant"]'
 
             # 提取文本内容
             item = self.parse_contents_with_xpath(response, item, xpath)
