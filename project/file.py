@@ -13,7 +13,7 @@ json_data_template = {
     'param': '',
     'cron': '1 12 * * *',
     'cmd': 'scrapy crawl',
-    'spider_id': '676e4fe0d08b88e0bb9c1ced'
+    'spider_id': '680b1c7676684571850e79b1'
 }
 
 
@@ -55,9 +55,9 @@ def extract_from_directory(directory):
 def upload_data(data_list):
 
     num = 0
-    url = "http://47.100.34.178:8080//api/schedules"
+    url = "http://121.37.171.89:18080/api/schedules"
     headers = {
-        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MTg3NWZjZTU0NDMxYzgyNjdjZDAzOSIsIm5iZiI6MTcyOTczMTA2MywidXNlcm5hbWUiOiJhZG1pbiJ9.J0wtk_QO_U28_tGlcQqOwdt1JWL3LQ11R_niUXGfxNo',
+        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGIwZGE1NzY2ODQ1NzE4NTBlNzkzMCIsIm5iZiI6MTc0NTU1OTczNSwidXNlcm5hbWUiOiJ6YXgifQ.qauWkkNQZZPZpvhnHDPOGA13rTCyY6JIMXLW1ROMMwY',
         'Content-Type': 'application/json'
     }
     for form_data in data_list:
@@ -93,7 +93,7 @@ def read_csv():
 
 def random_cron():
 
-    cron = '{minute} 13 * * *'
+    cron = '{minute} 15 * * *'
     minute = random.randint(0, 59)
     
     return cron.format(minute=minute)
@@ -103,7 +103,7 @@ def random_cron():
 if __name__ == "__main__":
 
 
-    path = '0225'
+    path = 'spiders/zhaopin'
     directory_path = os.path.abspath(os.path.dirname(__file__)) + "/" + path
 
 
