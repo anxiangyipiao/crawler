@@ -17,8 +17,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     source = 'gwy.zjks.com'
 
     timeRange = 7
-    max_page = 1
-
+    detail_xpath = 'div[@class="ibox float-e-margins"]'
 
     params = {
         "mkxh": "2",
@@ -39,7 +38,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         "Referer": "http://gwy.zjks.com/zjgwy/website/init.htm",
         "Upgrade-Insecure-Requests": "1"
     }
-
 
     dsdms = [
             '133','13301','13302','13303','13304','13305','13306','13307','13308','13309','13310','13311'
@@ -120,32 +118,32 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         yield self.request_next_page(baseItem, page, request_params)
 
 
-    def parse_html(self,response,item):
-        """
-        解析HTML响应并填充item对象。
+    # def parse_html(self,response,item):
+    #     """
+    #     解析HTML响应并填充item对象。
         
-        Args:
-            response (Response): Scrapy的Response对象，包含网页的响应内容。
-            item (BaseItem): 需要填充数据的item对象。
+    #     Args:
+    #         response (Response): Scrapy的Response对象，包含网页的响应内容。
+    #         item (BaseItem): 需要填充数据的item对象。
         
-        Returns:
-            BaseItem: 填充了网页内容的item对象。
+    #     Returns:
+    #         BaseItem: 填充了网页内容的item对象。
         
-        """
+    #     """
         
-        try:
+    #     try:
 
-            # 提取详情页的xpath
-            xpath = 'div[@class="ibox float-e-margins"]'
+    #         # 提取详情页的xpath
+    #         xpath = 'div[@class="ibox float-e-margins"]'
 
-            # 提取文本内容
-            item = self.parse_contents_with_xpath(response, item, xpath)
+    #         # 提取文本内容
+    #         item = self.parse_contents_with_xpath(response, item, xpath)
 
-            return item
-
-
+    #         return item
 
 
-        except Exception as e:
 
-            return None
+
+    #     except Exception as e:
+
+    #         return None

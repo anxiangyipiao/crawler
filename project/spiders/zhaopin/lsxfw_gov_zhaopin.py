@@ -20,7 +20,8 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     source = 'www.lsxfw.cn'
 
     timeRange = 7
-    max_page = 1
+
+    detail_xpath = '//div[@class="news_box"]'
 
 
     def start_requests(self):
