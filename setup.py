@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='baseSpider',
-    version='1.0.0',
+    version='1.0.2',
     description='Base spider needed by all other spiders overfall.',
     author='EastonLee',
     author_email='appelapp2017@outlook.com',
@@ -16,5 +16,6 @@ setup(
         'redis',
         'ddddocr',
         'requests',
+        'PyPDF2'
     ],
 )
