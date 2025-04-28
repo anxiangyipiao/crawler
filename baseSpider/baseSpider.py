@@ -47,6 +47,10 @@ class BaseSpiderObject(scrapy.Spider):
 
     # stop_flag = False      # 终止标识
     task_redis_server = RedisConnectionManager.get_connection() # Redis连接
+
+    detail_xpath ='//body' # 详情页xpath
+
+
     
 
     # 定义要覆盖或添加的设置
@@ -731,7 +735,7 @@ class BaseSpiderObject(scrapy.Spider):
         
         try:
            
-            xpath = '//body'
+            xpath = self.detail_xpath
 
             # 提取文本内容
             item = self.parse_contents_with_xpath(response, item, xpath)
