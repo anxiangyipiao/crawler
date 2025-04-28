@@ -3,3 +3,4 @@ playwright
 redis
 ddddocr
 requests
+PyPDF2
