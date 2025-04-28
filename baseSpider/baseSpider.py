@@ -786,10 +786,8 @@ class BaseSpiderObject(scrapy.Spider):
                             # 处理无效的相对链接（可选）
                             self.logger.warning(f"无法解析相对链接: {link} 在 {response.url}")
                             
-
             # 过滤掉不需要的链接
             full_attachment_links = self.filtered_links(full_attachment_links)
-
 
             # 将文本内容和附件链接组合
             item['contents'] = {
@@ -805,37 +803,51 @@ class BaseSpiderObject(scrapy.Spider):
             # 为了保持原逻辑，这里返回 None
             return None
 
+
+
     def request_attachment_contents(self,response,item:BaseItem):
-        
 
-        """
-        下载附件内容并将其添加到item对象中。
-        
-        Args:
-            response (Response): Scrapy的Response对象，包含网页的响应内容。
-            item (BaseItem): 需要填充数据的item对象。
-        
-        Returns:
-            BaseItem: 填充了附件内容的item对象。
-        
-        """
-        
-        try:
-            # 提取附件链接
-            attachment_links = item['contents']['attachments']
+        # 下载附件内容并将其添加到item对象中。
+        attachment_links = item['contents']['attachments']
             
-            # 下载每个附件
-            for link in attachment_links:
-                
-                if link:
+        # 下载每个附件
+        for link in attachment_links:
+        
+            if link.lower().endswith(".pdf"):
 
-                    yield scrapy.Request(link, callback=self.download_attachment, meta={'item': item}, dont_filter=True)
-                    
+                item['contents']['attachments_pdf'] = self.request_attachment_pdf(link,response)
 
+        return item
+
+
+    def request_attachment_pdf(self, link, response) -> str:
+        import requests
+        from PyPDF2 import PdfReader
+        from io import BytesIO
+
+        try:
+            # 获取原有请求中的头部信息与 Cookie
+            headers = response.request.headers.copy()
+            cookies = {}
+            for c in response.request.headers.getlist('Cookie'):
+                # 将 bytes 转为 str
+                c_str = c.decode('utf-8')
+                for pair in c_str.split(';'):
+                    k, _, v = pair.strip().partition('=')
+                    cookies[k] = v
+
+            # 携带头和 Cookies 发起请求
+            r = requests.get(link, timeout=10, headers=headers, cookies=cookies)
+            if r.status_code == 200:
+                pdf_reader = PdfReader(BytesIO(r.content))
+                pages_text = [page.extract_text() or "" for page in pdf_reader.pages]
+                return "\n".join(pages_text)
+            else:
+                self.logger.error(f"Failed to download PDF. Status: {r.status_code}")
+                return ""
         except Exception as e:
-
-            logger.error("Download attachment error",e)
-            return None
+            self.logger.error(f"Error downloading/reading PDF: {e}")
+            return ""
 
     def filtered_links(self,full_attachment_links):
 
