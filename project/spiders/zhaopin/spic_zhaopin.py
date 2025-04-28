@@ -3,14 +3,11 @@ from baseSpider.baseSpider import BaseSpiderObject,RequestItem
 from urllib.parse import urljoin
 
 
-
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "spic_zhaopin"
-    start_urls = [
-        'http://www.spic.com.cn/2021/jrwm/index.html',
+    start_urls = 'http://www.spic.com.cn/2021/jrwm/index.html'
        
-    ]
     next_base_urls = 'http://www.spic.com.cn/2021/jrwm/index_{page}.html#pages'
     contents_base_urls = ''  # 用于拼接详情页网址
     province = ""  # 必填，爬虫省份
@@ -25,16 +22,14 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
     def start_requests(self):
 
-        for url in self.start_urls:
-
-            request_params = {
-                'url': url,
+        request_params = {
+                'url':  self.start_urls,
                 'method': 'GET',
                 'meta': {'page': 0},
                 'callback': self.parse,
                 'params': None
             }
-            yield self.parse_task(RequestItem(**request_params))
+        yield self.parse_task(RequestItem(**request_params))
 
     def parse(self, response):
         

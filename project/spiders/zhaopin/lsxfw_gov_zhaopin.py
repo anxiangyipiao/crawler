@@ -7,10 +7,8 @@ from urllib.parse import urljoin
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "lsxfw_gov_zhaopin"
-    start_urls = [
-        'https://www.lsxfw.cn/2020/news_list.php?cid=117',
+    start_urls = 'https://www.lsxfw.cn/2020/news_list.php?cid=117'
        
-    ]
     next_base_urls = 'http://web.nbdj.gov.cn/info_more.asp?newstype_id=436&CurPage={page}'
     contents_base_urls = ''  # 用于拼接详情页网址
     province = "浙江省"  # 必填，爬虫省份
@@ -26,10 +24,8 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
     def start_requests(self):
 
-        for url in self.start_urls:
-
             request_params = {
-                'url': url,
+                'url': self.start_urls,
                 'method': 'GET',
                 'meta': {'page': 1},
                 'callback': self.parse,
@@ -77,30 +73,30 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         yield self.request_next_page(baseItem, page, request_params)
 
 
-    def parse_html(self,response,item):
-        """
-        解析HTML响应并填充item对象。
+    # def parse_html(self,response,item):
+    #     """
+    #     解析HTML响应并填充item对象。
         
-        Args:
-            response (Response): Scrapy的Response对象，包含网页的响应内容。
-            item (BaseItem): 需要填充数据的item对象。
+    #     Args:
+    #         response (Response): Scrapy的Response对象，包含网页的响应内容。
+    #         item (BaseItem): 需要填充数据的item对象。
         
-        Returns:
-            BaseItem: 填充了网页内容的item对象。
+    #     Returns:
+    #         BaseItem: 填充了网页内容的item对象。
         
-        """
+    #     """
         
-        try:
+    #     try:
 
-            # 提取详情页的xpath
-            xpath = '//div[@class="news_box"]'
+    #         # 提取详情页的xpath
+    #         xpath = '//div[@class="news_box"]'
 
-            # 提取文本内容
-            item = self.parse_contents_with_xpath(response, item, xpath)
+    #         # 提取文本内容
+    #         item = self.parse_contents_with_xpath(response, item, xpath)
 
-            return item
+    #         return item
 
 
-        except Exception as e:
+    #     except Exception as e:
 
-            return None
+    #         return None

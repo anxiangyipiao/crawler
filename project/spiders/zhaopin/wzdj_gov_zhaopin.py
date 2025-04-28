@@ -7,10 +7,8 @@ from urllib.parse import urljoin
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "wzdj_gov_zhaopin"
-    start_urls = [
-        'https://www.wzdj.gov.cn/ggl/index.shtml',
+    start_urls = 'https://www.wzdj.gov.cn/ggl/index.shtml'
        
-    ]
     next_base_urls = 'http://web.nbdj.gov.cn/info_more.asp?newstype_id=436&CurPage={page}'
     contents_base_urls = ''  # 用于拼接详情页网址
     province = "浙江省"  # 必填，爬虫省份
@@ -26,16 +24,16 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
     def start_requests(self):
 
-        for url in self.start_urls:
-
-            request_params = {
-                'url': url,
+    
+        request_params = {
+                'url': self.start_urls,
                 'method': 'GET',
                 'meta': {'page': 1},
                 'callback': self.parse,
                 'params': None
             }
-            yield self.parse_task(RequestItem(**request_params))
+        
+        yield self.parse_task(RequestItem(**request_params))
 
     def parse(self, response):
         

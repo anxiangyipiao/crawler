@@ -7,10 +7,9 @@ from urllib.parse import urljoin
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
     name = "nbdj_gov_zhaopin"
-    start_urls = [
-        'http://web.nbdj.gov.cn/info_more.asp?newstype_id=436&CurPage=1',
+    start_urls = 'http://web.nbdj.gov.cn/info_more.asp?newstype_id=436&CurPage=1'
        
-    ]
+    
     next_base_urls = 'http://web.nbdj.gov.cn/info_more.asp?newstype_id=436&CurPage={page}'
     contents_base_urls = ''  # 用于拼接详情页网址
     province = "浙江省"  # 必填，爬虫省份
@@ -25,10 +24,9 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
     def start_requests(self):
 
-        for url in self.start_urls:
-
+       
             request_params = {
-                'url': url,
+                'url': self.start_urls,
                 'method': 'GET',
                 'meta': {'page': 0},
                 'callback': self.parse,
