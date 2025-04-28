@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class BaseSpiderObject(scrapy.Spider):
 
     name = "base"
-    start_urls = []
+    start_urls = ''
 
     next_base_urls = ''  # 用于下一页网址拼接
     contents_base_urls = None  # 用于拼接详情页网址
@@ -28,7 +28,7 @@ class BaseSpiderObject(scrapy.Spider):
     city = None  # 必填，爬虫城市
     county = None  # 选填，爬虫区/县
     site_name = None
-    source = None # 网站
+    source = start_urls.split('/')[2] # 数据来源，爬虫名称
     page_over = False # 翻页
     current_directory = None
     
