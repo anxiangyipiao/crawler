@@ -38,7 +38,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
     lis = ['jgsydwzp','gqzp','zpzk']
 
-    
+
     def start_requests(self):
 
         for type in self.lis:
