@@ -738,10 +738,6 @@ class BaseSpiderObject(scrapy.Spider):
             # 提取文本内容
             item = self.parse_contents_with_xpath(response, item, self.detail_xpath)
 
-            if item['contents']['attachments'] == []:
-                # 如果没有附件链接，则直接返回
-                return item     
-
             # 提取附件内容
             item = self.request_attachment_contents(response, item)
 
@@ -813,6 +809,9 @@ class BaseSpiderObject(scrapy.Spider):
 
         # 下载附件内容并将其添加到item对象中。
         attachment_links = item['contents']['attachments']
+
+        if attachment_links is None:
+            return item
             
         # 下载每个附件
         for link in attachment_links:
@@ -858,19 +857,11 @@ class BaseSpiderObject(scrapy.Spider):
 
     def filtered_links(self,full_attachment_links):
 
-        # 过滤掉不需要的链接
-        filtered_links = []
-        for link in full_attachment_links:
-            if link.lower().endswith(".pdf", ".doc", ".docx", ".xls", ".xlsx"):
-                filtered_links.append(link)
-        
-
-        # 提取PDF链接
-        for i in range(len(filtered_links)):
-            # 提取PDF链接
-            filtered_links[i] = self._extract_pdf_url(filtered_links[i])
-
-
+        filtered_links = [
+            self._extract_pdf_url(link)
+            for link in full_attachment_links
+            if link.lower().endswith((".pdf", ".doc", ".docx", ".xls", ".xlsx"))
+        ]
         return filtered_links
 
     def _extract_pdf_url(self,viewer_url) -> str:
