@@ -832,8 +832,16 @@ class BaseSpiderObject(scrapy.Spider):
         from io import BytesIO
 
         try:
-            # 获取原有请求中的头部信息与 Cookie
-            headers = response.request.headers.copy()
+            # 将 Scrapy Headers 转换为适合 requests 的字典
+            scrapy_headers = response.request.headers
+            headers = {}
+            for k, v in scrapy_headers.items():
+                key = k.decode('utf-8')
+                # v 是一个包含字节串的列表，需转换成字符串
+                value = ", ".join(x.decode('utf-8') for x in v)
+                headers[key] = value
+            
+            # 提取并拼装 Cookie 
             cookies = {}
             for c in response.request.headers.getlist('Cookie'):
                 # 将 bytes 转为 str
