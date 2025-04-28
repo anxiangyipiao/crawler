@@ -735,10 +735,10 @@ class BaseSpiderObject(scrapy.Spider):
         
         try:
            
-            xpath = self.detail_xpath
+            # xpath = self.detail_xpath
 
             # 提取文本内容
-            item = self.parse_contents_with_xpath(response, item, xpath)
+            item = self.parse_contents_with_xpath(response, item, self.detail_xpath)
 
             # 提取附件内容
             item = self.request_attachment_contents(response, item)
