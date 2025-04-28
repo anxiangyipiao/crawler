@@ -41,7 +41,7 @@ class BaseSpiderObject(scrapy.Spider):
 
     failed_urls = [] # 失败的url
 
-    max_page = 10 # 最大页数
+    max_page = 2 # 最大页数
     init_failed_count = 0 # 初始化失败数量
     max_failures = 10 # 最大失败数量
 
@@ -71,7 +71,7 @@ class BaseSpiderObject(scrapy.Spider):
             'RETRY_ENABLED': True,
             'RETRY_TIMES': 2,
             'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
-            'LOG_LEVEL':'ERROR',
+            'LOG_LEVEL':'INFO',
     }
     
     def __init__(self, *args, **kwargs):
