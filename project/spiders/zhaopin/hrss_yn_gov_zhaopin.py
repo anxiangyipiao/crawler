@@ -52,7 +52,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
             yield self.parse_task(RequestItem(**request_params))
 
     
-
     def parse(self, response):
         
         page = response.meta['page']
@@ -94,30 +93,5 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         # 翻页
         yield self.request_next_page(baseItem, page, request_params)
 
-    # def parse_html(self,response,item):
-    #     """
-    #     解析HTML响应并填充item对象。
-        
-    #     Args:
-    #         response (Response): Scrapy的Response对象，包含网页的响应内容。
-    #         item (BaseItem): 需要填充数据的item对象。
-        
-    #     Returns:
-    #         BaseItem: 填充了网页内容的item对象。
-        
-    #     """
-        
-    #     try:
-
-    #          # 提取详情页的xpath
-    #         xpath = '//table[@style="width:1025px"]'
-
-    #         # 提取文本内容
-    #         item = self.parse_contents_with_xpath(response, item, xpath)
-
-    #         return item
 
 
-    #     except Exception as e:
-
-    #         return None
