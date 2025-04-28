@@ -813,7 +813,11 @@ class BaseSpiderObject(scrapy.Spider):
         
             if link.lower().endswith(".pdf"):
 
-                item['contents']['attachments_pdf'] = self.request_attachment_pdf(link,response)
+                if 'attachments_pdf' not in item['contents']:
+                    item['contents']['attachments_pdf'] = []
+
+                pdf_text = self.request_attachment_pdf(link, response)
+                item['contents']['attachments_pdf'].append(pdf_text)
 
         return item
 
