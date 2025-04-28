@@ -68,6 +68,7 @@ class BaseItem(scrapy.Item):
     origin_url = scrapy.Field()  # 原始链接
     contents = scrapy.Field()  # 详情页内容
     
+    
 
 
 

@@ -14,6 +14,7 @@ import logging
 import re
 
 
+
 logger = logging.getLogger(__name__)
 
 class BaseSpiderObject(scrapy.Spider):
@@ -735,6 +736,9 @@ class BaseSpiderObject(scrapy.Spider):
             # 提取文本内容
             item = self.parse_contents_with_xpath(response, item, xpath)
 
+            # 提取附件内容
+            item = self.request_attachment_contents(response, item)
+
 
             return item
 
@@ -781,7 +785,11 @@ class BaseSpiderObject(scrapy.Spider):
                         except ValueError:
                             # 处理无效的相对链接（可选）
                             self.logger.warning(f"无法解析相对链接: {link} 在 {response.url}")
-                            pass # 或者记录错误，或者跳过
+                            
+
+            # 过滤掉不需要的链接
+            full_attachment_links = self.filtered_links(full_attachment_links)
+
 
             # 将文本内容和附件链接组合
             item['contents'] = {
@@ -796,6 +804,68 @@ class BaseSpiderObject(scrapy.Spider):
             # 根据需要决定是否返回 None 或带有部分数据的 item
             # 为了保持原逻辑，这里返回 None
             return None
+
+    def request_attachment_contents(self,response,item:BaseItem):
+        
+
+        """
+        下载附件内容并将其添加到item对象中。
+        
+        Args:
+            response (Response): Scrapy的Response对象，包含网页的响应内容。
+            item (BaseItem): 需要填充数据的item对象。
+        
+        Returns:
+            BaseItem: 填充了附件内容的item对象。
+        
+        """
+        
+        try:
+            # 提取附件链接
+            attachment_links = item['contents']['attachments']
+            
+            # 下载每个附件
+            for link in attachment_links:
+                
+                if link:
+
+                    yield scrapy.Request(link, callback=self.download_attachment, meta={'item': item}, dont_filter=True)
+                    
+
+        except Exception as e:
+
+            logger.error("Download attachment error",e)
+            return None
+
+    def filtered_links(self,full_attachment_links):
+
+        # 过滤掉不需要的链接
+        filtered_links = []
+        for link in full_attachment_links:
+            if link.lower().endswith(".pdf", ".doc", ".docx", ".xls", ".xlsx"):
+                filtered_links.append(link)
+        
+
+        # 提取PDF链接
+        for i in range(len(filtered_links)):
+            # 提取PDF链接
+            filtered_links[i] = self._extract_pdf_url(filtered_links[i])
+
+
+        return filtered_links
+
+    def _extract_pdf_url(self,viewer_url) -> str:
+       
+        count = viewer_url.count("http") or viewer_url.count("https")
+
+        if count == 1:
+            # 仅有一个 http(s) 链接，直接返回
+            return viewer_url   
+        if count > 1:
+            # 有多个 http(s) 链接，解析出后一个
+            viewer_url = 'http'+ viewer_url.split("http")[-1]
+            
+            return viewer_url
 
     def parse_json(self,response,item:BaseItem)->BaseItem:
         """
