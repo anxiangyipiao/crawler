@@ -803,8 +803,6 @@ class BaseSpiderObject(scrapy.Spider):
             # 为了保持原逻辑，这里返回 None
             return None
 
-
-
     def request_attachment_contents(self,response,item:BaseItem):
 
         # 下载附件内容并将其添加到item对象中。
@@ -818,7 +816,6 @@ class BaseSpiderObject(scrapy.Spider):
                 item['contents']['attachments_pdf'] = self.request_attachment_pdf(link,response)
 
         return item
-
 
     def request_attachment_pdf(self, link, response) -> str:
         import requests
