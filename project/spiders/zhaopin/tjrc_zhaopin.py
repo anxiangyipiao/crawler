@@ -42,6 +42,29 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         "Upgrade-Insecure-Requests": "1"
     }
 
+
+    dheader = {
+        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "accept-encoding": "gzip, deflate, br, zstd",
+        "accept-language": "zh-CN,zh;q=0.9",
+        "cache-control": "no-cache",
+        "connection": "keep-alive",
+        "cookie": "ASP.NET_SessionId=31vdptzh10j21wed5zdxsrc0",
+        "host": "zxbm.tjtalents.com.cn",
+        "pragma": "no-cache",
+        "referer": "https://www.tjrc.com.cn/",
+        "sec-ch-ua": "\"Google Chrome\";v=\"135\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"135\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "sec-fetch-dest": "document",
+        "sec-fetch-mode": "navigate",
+        "sec-fetch-site": "cross-site",
+        "sec-fetch-user": "?1",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    }
+
+
     dsdms = [
             '3013'
             ]
@@ -91,13 +114,12 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
                 baseItem['url'] = node['zx_link'].strip()
             
-            print(baseItem['url'])
-
             request_params = {
                         'url': baseItem['url'],
                         'meta': {'item': baseItem},
                         'callback': self.parse_content_detal,
                         'errback': self.errback_httpbin,
+                        'headers': self.dheader,
                     }
 
             
