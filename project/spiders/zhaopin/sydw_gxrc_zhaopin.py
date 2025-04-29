@@ -13,6 +13,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
     site_name = '广西人才网'
+    source = 'sydw.gxrc.com'
     
 
     timeRange = 7
