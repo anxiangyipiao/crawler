@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
     path = os.path.dirname(os.path.abspath(__file__)) 
     sys.path.append(path) 
-    execute(['scrapy', 'crawl', 'tjrc_zhaopin'])
+    execute(['scrapy', 'crawl', 'lnrsks_gov_zhaopin'])
 
 
 
