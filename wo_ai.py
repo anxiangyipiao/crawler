@@ -21,24 +21,6 @@ contents = {
 
 
 
-
-# # 需要提取pdf的url
-# pdf_url_list= contents['attachments']
-
-# # 清洗url
-# pdf_url_list = [url for url in pdf_url_list if url.endswith('.pdf')]
-
-# print(pdf_url_list)
-# # 下载pdf
-# pdf_content = PDFDownloader.download_pdf_text(pdf_url_list[0])
-
-# print(pdf_content)
-
-# # 将下载的pdf内容添加到contents字典中
-# contents['text'] += pdf_content
-
-
-
 class WoCloudAI:
     def __init__(self):
         self.url = "https://panservice.mail.wo.cn/wohome/ai/assistant/query"
