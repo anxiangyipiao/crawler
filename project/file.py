@@ -93,7 +93,7 @@ def read_csv():
 
 def random_cron():
 
-    cron = '{minute} 15 * * *'
+    cron = '{minute} 12,18 * * *'
     minute = random.randint(0, 59)
     
     return cron.format(minute=minute)
