@@ -1,25 +1,24 @@
 
 from baseSpider.baseSpider import BaseSpiderObject,RequestItem
 from urllib.parse import urljoin
-import re
 
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
-    name = "sydw_gxrc_zhaopin"
-    start_urls = 'https://sydw.gxrc.com/?{type}=1'
-    next_base_urls = 'https://sydw.gxrc.com/?{type}={page}'
+    name = "hrsss_hainan_gov_zhaopin"
+    start_urls = 'https://hrss.hainan.gov.cn/hrss/{type}/list3.shtml'
+    next_base_urls = 'https://hrss.hainan.gov.cn/hrss/{type}/list3_{page}.shtml'
     contents_base_urls = ''  # 用于拼接详情页网址
-    province = ""  # 必填，爬虫省份
+    province = "海南省"  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
-    site_name = '广西人才网'
-    source = 'sydw.gxrc.com'
-    
+    site_name = '海南省人力资源和社会保障厅事业单位'
+    source = 'hrss.hainan.gov.cn'
+
 
     timeRange = 7
     max_page = 1
 
-    detail_xpath = '//div[@class="artical"]'
+    detail_xpath = '//div[@class="article"]'
 
     headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -36,7 +35,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     }
 
 
-    lis = ['pageindex']
+    lis = ['sydwzp']
 
     
     def start_requests(self):
@@ -58,15 +57,15 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
         
         page = response.meta['page']
 
-        node_list  = response.xpath('//div[@class="news-list list"]/ul/li')
+        node_list  = response.xpath('//div[@class="list_div mar-top2 "]')
  
         for node in node_list:
 
             baseItem = self.get_base_item()
             baseItem['title'] = node.xpath('.//a/text()').extract_first().strip()
-            baseItem['publish_time'] = self.format_time_to_str(node.xpath('.//div[@class="date"]/span/text()').extract_first().strip())
+            baseItem['publish_time'] = self.format_time_to_str(node.xpath('.//td[@align="left"]/text()').extract_first().strip())
             baseItem['url'] = urljoin(response.url,node.xpath('.//a/@href').extract_first().strip())
-   
+            
             request_params = {
                     'url': baseItem['url'],
                     'meta': {'item': baseItem},
