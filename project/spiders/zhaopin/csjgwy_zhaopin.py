@@ -18,10 +18,11 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     timeRange = 7
     detail_xpath = 'div[@class="newslistbox"]'
 
-    overrides_settings = {
+    custom_settings = {
         'DOWNLOADER_MIDDLEWARES' : {
             "project.middlewares.ProjectDownloaderMiddleware": 521,
-        }
+        },
+        'DOWNLOAD_DELAY': 1,
     }
 
 
