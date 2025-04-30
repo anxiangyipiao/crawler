@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class BaseSpiderObject(scrapy.Spider):
 
     name = "base"
-    start_urls = []
+    start_urls = ''
 
     next_base_urls = ''  # 用于下一页网址拼接
     contents_base_urls = None  # 用于拼接详情页网址
@@ -28,7 +28,7 @@ class BaseSpiderObject(scrapy.Spider):
     city = None  # 必填，爬虫城市
     county = None  # 选填，爬虫区/县
     site_name = None
-    source = None # 网站
+    source = start_urls.split('/')[2] # 数据来源，爬虫名称
     page_over = False # 翻页
     current_directory = None
     
@@ -55,10 +55,10 @@ class BaseSpiderObject(scrapy.Spider):
 
     # 定义要覆盖或添加的设置
     overrides_settings = {}
-    custom_settings = {
+    custom_setting = {
             **overrides_settings,
          'DOWNLOADER_MIDDLEWARES': {
-                "baseSpider.middlewares.BaseDownloaderMiddleware": 543, 
+                "baseSpider.middlewares.BaseDownloaderMiddleware": 3, 
                 "baseSpider.middlewares.BaseHeaderMiddleware": 1,  # 添加请求头
                 "baseSpider.middlewares.PlaywrightMiddleware": 2,  # 使用playwright渲染页面
             },
@@ -73,9 +73,34 @@ class BaseSpiderObject(scrapy.Spider):
             'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
             'LOG_LEVEL':'INFO',
     }
+
+
+
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        global_settings = dict(crawler.settings.items())
+        merged_settings = cls.merge_settings(cls.custom_setting, global_settings)
+        spider = super(BaseSpiderObject, cls).from_crawler(crawler, *args, **kwargs)
+        spider.settings = merged_settings
+        return spider
+
+    @classmethod
+    def merge_settings(cls, custom, global_):
+        """合并 custom_setting 和全局 settings"""
+        merged = custom.copy()
+        for key, value in global_.items():
+            if key in merged:
+                if key == 'DOWNLOADER_MIDDLEWARES' or key == 'ITEM_PIPELINES' or key == 'SPIDER_MIDDLEWARES' or key == 'EXTENSIONS':
+                    # 处理下载中间件的合并
+                    merged[key].update(value)
+            else:
+                merged[key] = value
+        
+        return merged
+
+
     
-    def __init__(self, *args, **kwargs):
-        super(BaseSpiderObject, self).__init__(*args, **kwargs)
+    def __init__(self):
 
         directory = inspect.getmodule(self.__class__).__file__
         self.current_directory = directory.split('/spiders')[0].split('/')[-1]
@@ -832,8 +857,16 @@ class BaseSpiderObject(scrapy.Spider):
         from io import BytesIO
 
         try:
-            # 获取原有请求中的头部信息与 Cookie
-            headers = response.request.headers.copy()
+            # 将 Scrapy Headers 转换为适合 requests 的字典
+            scrapy_headers = response.request.headers
+            headers = {}
+            for k, v in scrapy_headers.items():
+                key = k.decode('utf-8')
+                # v 是一个包含字节串的列表，需转换成字符串
+                value = ", ".join(x.decode('utf-8') for x in v)
+                headers[key] = value
+            
+            # 提取并拼装 Cookie 
             cookies = {}
             for c in response.request.headers.getlist('Cookie'):
                 # 将 bytes 转为 str

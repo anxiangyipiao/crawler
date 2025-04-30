@@ -87,6 +87,9 @@ class BaseDownloaderMiddleware:
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
+
+        print('BaseDownloaderMiddleware process_request')
+
         return None
 
     def process_response(self, request, response, spider):
@@ -113,6 +116,8 @@ class BaseDownloaderMiddleware:
 
 
 class BaseHeaderMiddleware:
+    
+    print('BaseHeaderMiddleware init')
 
     def process_request(self, request, spider):
 
@@ -137,6 +142,9 @@ class PlaywrightMiddleware:
         await page.route("**/*", lambda route: route.continue_() if route.request.resource_type in ["document", "script", "xhr", "fetch"] else route.abort())
 
     async def _process_request(self, request, spider):
+
+        print('PlaywrightMiddleware process_request')
+
         if not request.meta.get('use_playwright'):
             return None
 
