@@ -51,8 +51,6 @@ class BaseSpiderObject(scrapy.Spider):
     detail_xpath ='//body' # 详情页xpath
 
 
-    
-
     # 定义要覆盖或添加的设置
     overrides_settings = {}
     custom_setting = {
@@ -78,6 +76,11 @@ class BaseSpiderObject(scrapy.Spider):
         # 读取全局 settings.py
         from scrapy.utils.project import get_project_settings
         global_settings = dict(get_project_settings().items())
+
+        # 首先合并global_settings 和 overrides_settings
+
+        global_settings = cls.merge_settings_only(cls.overrides_settings,global_settings)
+
         return cls.merge_settings(cls.custom_setting, global_settings)
 
     @classmethod
@@ -92,6 +95,17 @@ class BaseSpiderObject(scrapy.Spider):
         
         return merged
     
+    @classmethod
+    def merge_settings_only(cls, custom, global_):
+
+        merged = global_.copy()
+        for key, value in custom.items():
+            if key in merged:
+                merged[key] = value
+        
+        return merged
+
+
     def __init__(self):
 
         directory = inspect.getmodule(self.__class__).__file__
