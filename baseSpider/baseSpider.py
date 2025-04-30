@@ -95,6 +95,7 @@ class BaseSpiderObject(scrapy.Spider):
                     merged[key].update(value)
             else:
                 merged[key] = value
+        
         return merged
 
 
