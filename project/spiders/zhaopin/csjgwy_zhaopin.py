@@ -141,4 +141,4 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
     #         return None
 
-Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao.custom_settings = Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao.get_merged_settings()
+# Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao.custom_settings = Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao.get_merged_settings()
