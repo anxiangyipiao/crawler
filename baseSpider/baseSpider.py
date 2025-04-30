@@ -17,7 +17,38 @@ import re
 
 logger = logging.getLogger(__name__)
 
-class BaseSpiderObject(scrapy.Spider):
+
+class SpiderMeta(type):
+    def __new__(mcs, name, bases, attrs):
+        # 先合并所有父类的 custom_settings
+        base_settings = {}
+        for base in reversed(bases):
+            base_custom = getattr(base, 'custom_settings', None)
+            if isinstance(base_custom, dict):
+                base_settings |= base_custom
+
+        custom_settings = attrs.get('custom_settings', {})
+        if not isinstance(custom_settings, dict):
+            custom_settings = {}
+
+        # 需要叠加的 key
+        merge_keys = ['DOWNLOADER_MIDDLEWARES', 'ITEM_PIPELINES', 'SPIDER_MIDDLEWARES', 'EXTENSIONS']
+        merged = base_settings.copy()
+        for key, value in custom_settings.items():
+            if key in merge_keys and key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+                # 叠加（父类+子类，子类优先）
+                merged[key] = merged[key].copy()
+                merged[key].update(value)
+            else:
+                merged[key] = value
+
+        attrs['custom_settings'] = merged
+        return super().__new__(mcs, name, bases, attrs)
+
+
+
+
+class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
 
     name = "base"
     start_urls = ''
@@ -51,9 +82,7 @@ class BaseSpiderObject(scrapy.Spider):
     detail_xpath ='//body' # 详情页xpath
 
 
-    # 定义要覆盖或添加的设置
-    overrides_settings = {}
-    custom_setting = {
+    custom_settings = {
          'DOWNLOADER_MIDDLEWARES': {
                 "baseSpider.middlewares.BaseDownloaderMiddleware": 3, 
                 "baseSpider.middlewares.BaseHeaderMiddleware": 1,  # 添加请求头
@@ -70,40 +99,6 @@ class BaseSpiderObject(scrapy.Spider):
             'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
             'LOG_LEVEL':'INFO',
     }
-
-    @classmethod
-    def get_merged_settings(cls):
-        # 读取全局 settings.py
-        from scrapy.utils.project import get_project_settings
-        global_settings = dict(get_project_settings().items())
-
-        # 首先合并global_settings 和 overrides_settings
-        global_settings = cls.merge_settings_only(cls.overrides_settings,global_settings)
-
-        return cls.merge_settings(cls.custom_setting, global_settings)
-
-    @classmethod
-    def merge_settings(cls, custom, global_):
-        merged = custom.copy()
-        for key, value in global_.items():
-            if key in merged:
-                if key in ['DOWNLOADER_MIDDLEWARES', 'ITEM_PIPELINES', 'SPIDER_MIDDLEWARES', 'EXTENSIONS']:
-                    merged[key].update(value)
-            else:
-                merged[key] = value
-        
-        return merged
-    
-    @classmethod
-    def merge_settings_only(cls, overrides, global_):
-
-
-        merged = global_.copy()
-        for key, value in overrides.items():
-            merged[key] = value
-
-        return merged
-
 
     def __init__(self):
 
@@ -943,7 +938,3 @@ class BaseSpiderObject(scrapy.Spider):
             return None
         
 
-
-# 设置爬虫的自定义设置
-# 这里的设置会覆盖全局的 settings.py 中的设置
-BaseSpiderObject.custom_settings = BaseSpiderObject.get_merged_settings()
