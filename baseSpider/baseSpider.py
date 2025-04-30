@@ -78,7 +78,6 @@ class BaseSpiderObject(scrapy.Spider):
         global_settings = dict(get_project_settings().items())
 
         # 首先合并global_settings 和 overrides_settings
-
         global_settings = cls.merge_settings_only(cls.overrides_settings,global_settings)
 
         return cls.merge_settings(cls.custom_setting, global_settings)
@@ -96,13 +95,13 @@ class BaseSpiderObject(scrapy.Spider):
         return merged
     
     @classmethod
-    def merge_settings_only(cls, custom, global_):
+    def merge_settings_only(cls, overrides, global_):
+
 
         merged = global_.copy()
-        for key, value in custom.items():
-            if key in merged:
-                merged[key] = value
-        
+        for key, value in overrides.items():
+            merged[key] = value
+
         return merged
 
 
