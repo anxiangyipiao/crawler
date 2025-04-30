@@ -18,6 +18,12 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     timeRange = 7
     detail_xpath = 'div[@class="newslistbox"]'
 
+    overrides_settings = {
+        'DOWNLOADER_MIDDLEWARES' : {
+            "project.middlewares.ProjectDownloaderMiddleware": 521,
+        }
+    }
+
 
     params = {
         "mkxh": "2",
@@ -134,3 +140,5 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     #     except Exception as e:
 
     #         return None
+
+Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao.custom_settings = Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao.get_merged_settings()
