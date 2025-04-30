@@ -79,7 +79,7 @@ class ProjectDownloaderMiddleware:
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
 
-        print("Request URL:", request.url)
+        print("ProjectDownloaderMiddleware process_request")
 
         
         return None
