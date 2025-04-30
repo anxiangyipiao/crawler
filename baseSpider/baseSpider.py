@@ -73,15 +73,12 @@ class BaseSpiderObject(scrapy.Spider):
             'LOG_LEVEL':'INFO',
     }
 
-
-
     @classmethod
     def get_merged_settings(cls):
         # 读取全局 settings.py
         from scrapy.utils.project import get_project_settings
         global_settings = dict(get_project_settings().items())
         return cls.merge_settings(cls.custom_setting, global_settings)
-
 
     @classmethod
     def merge_settings(cls, custom, global_):
