@@ -73,9 +73,23 @@ class BaseSpiderObject(scrapy.Spider):
             'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
             'LOG_LEVEL':'INFO',
     }
+
+
+
+    # 读取配置文件
+    @classmethod
+    def from_crawler(cls, crawler):
+        settings = crawler.settings
+        return cls(settings.getbool('LOG_ENABLED'))
+
+
     
-    def __init__(self, *args, **kwargs):
-        super(BaseSpiderObject, self).__init__(*args, **kwargs)
+    def __init__(self, log_is_enabled=False):
+
+        if log_is_enabled:
+            print("log is enabled!")
+
+        # super(BaseSpiderObject, self).__init__(*args, **kwargs)
 
         directory = inspect.getmodule(self.__class__).__file__
         self.current_directory = directory.split('/spiders')[0].split('/')[-1]
