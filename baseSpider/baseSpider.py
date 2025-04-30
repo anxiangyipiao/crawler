@@ -55,10 +55,10 @@ class BaseSpiderObject(scrapy.Spider):
 
     # 定义要覆盖或添加的设置
     overrides_settings = {}
-    custom_settings = {
+    custom_setting = {
             **overrides_settings,
          'DOWNLOADER_MIDDLEWARES': {
-                "baseSpider.middlewares.BaseDownloaderMiddleware": 543, 
+                "baseSpider.middlewares.BaseDownloaderMiddleware": 3, 
                 "baseSpider.middlewares.BaseHeaderMiddleware": 1,  # 添加请求头
                 "baseSpider.middlewares.PlaywrightMiddleware": 2,  # 使用playwright渲染页面
             },
@@ -76,20 +76,30 @@ class BaseSpiderObject(scrapy.Spider):
 
 
 
-    # 读取配置文件
     @classmethod
-    def from_crawler(cls, crawler):
-        settings = crawler.settings
-        return cls(settings.getbool('LOG_ENABLED'))
+    def from_crawler(cls, crawler, *args, **kwargs):
+        global_settings = dict(crawler.settings.items())
+        merged_settings = cls.merge_settings(cls.custom_setting, global_settings)
+        spider = super(BaseSpiderObject, cls).from_crawler(crawler, *args, **kwargs)
+        spider.settings = merged_settings
+        return spider
+
+    @classmethod
+    def merge_settings(cls, custom, global_):
+        """合并 custom_setting 和全局 settings"""
+        merged = custom.copy()
+        for key, value in global_.items():
+            if key in merged:
+                if key == 'DOWNLOADER_MIDDLEWARES' or key == 'ITEM_PIPELINES' or key == 'SPIDER_MIDDLEWARES' or key == 'EXTENSIONS':
+                    # 处理下载中间件的合并
+                    merged[key].update(value)
+            else:
+                merged[key] = value
+        return merged
 
 
     
-    def __init__(self, log_is_enabled=False):
-
-        if log_is_enabled:
-            print("log is enabled!")
-
-        # super(BaseSpiderObject, self).__init__(*args, **kwargs)
+    def __init__(self):
 
         directory = inspect.getmodule(self.__class__).__file__
         self.current_directory = directory.split('/spiders')[0].split('/')[-1]
