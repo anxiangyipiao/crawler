@@ -17,7 +17,38 @@ import re
 
 logger = logging.getLogger(__name__)
 
-class BaseSpiderObject(scrapy.Spider):
+
+class SpiderMeta(type):
+    def __new__(mcs, name, bases, attrs):
+        # 先合并所有父类的 custom_settings
+        base_settings = {}
+        for base in reversed(bases):
+            base_custom = getattr(base, 'custom_settings', None)
+            if isinstance(base_custom, dict):
+                base_settings |= base_custom
+
+        custom_settings = attrs.get('custom_settings', {})
+        if not isinstance(custom_settings, dict):
+            custom_settings = {}
+
+        # 需要叠加的 key
+        merge_keys = ['DOWNLOADER_MIDDLEWARES', 'ITEM_PIPELINES', 'SPIDER_MIDDLEWARES', 'EXTENSIONS']
+        merged = base_settings.copy()
+        for key, value in custom_settings.items():
+            if key in merge_keys and key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+                # 叠加（父类+子类，子类优先）
+                merged[key] = merged[key].copy()
+                merged[key].update(value)
+            else:
+                merged[key] = value
+
+        attrs['custom_settings'] = merged
+        return super().__new__(mcs, name, bases, attrs)
+
+
+
+
+class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
 
     name = "base"
     start_urls = ''
@@ -28,7 +59,7 @@ class BaseSpiderObject(scrapy.Spider):
     city = None  # 必填，爬虫城市
     county = None  # 选填，爬虫区/县
     site_name = None
-    source = start_urls.split('/')[2] # 数据来源，爬虫名称
+    source = None # 数据来源，爬虫名称
     page_over = False # 翻页
     current_directory = None
     
@@ -51,12 +82,7 @@ class BaseSpiderObject(scrapy.Spider):
     detail_xpath ='//body' # 详情页xpath
 
 
-    
-
-    # 定义要覆盖或添加的设置
-    overrides_settings = {}
-    custom_setting = {
-            **overrides_settings,
+    custom_settings = {
          'DOWNLOADER_MIDDLEWARES': {
                 "baseSpider.middlewares.BaseDownloaderMiddleware": 3, 
                 "baseSpider.middlewares.BaseHeaderMiddleware": 1,  # 添加请求头
@@ -74,36 +100,11 @@ class BaseSpiderObject(scrapy.Spider):
             'LOG_LEVEL':'INFO',
     }
 
-
-
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        global_settings = dict(crawler.settings.items())
-        merged_settings = cls.merge_settings(cls.custom_setting, global_settings)
-        spider = super(BaseSpiderObject, cls).from_crawler(crawler, *args, **kwargs)
-        spider.settings = merged_settings
-        return spider
-
-    @classmethod
-    def merge_settings(cls, custom, global_):
-        """合并 custom_setting 和全局 settings"""
-        merged = custom.copy()
-        for key, value in global_.items():
-            if key in merged:
-                if key == 'DOWNLOADER_MIDDLEWARES' or key == 'ITEM_PIPELINES' or key == 'SPIDER_MIDDLEWARES' or key == 'EXTENSIONS':
-                    # 处理下载中间件的合并
-                    merged[key].update(value)
-            else:
-                merged[key] = value
-        
-        return merged
-
-
-    
     def __init__(self):
 
         directory = inspect.getmodule(self.__class__).__file__
         self.current_directory = directory.split('/spiders')[0].split('/')[-1]
+        self.source = self.start_urls.split('/')[2]
 
         self.task_redis_server.rpush('running_spiders', self.name)
         logger.info(f'Spider {self.name} started and added to running queue.')
@@ -935,3 +936,5 @@ class BaseSpiderObject(scrapy.Spider):
 
             logger.error("Parse json error",e)
             return None
+        
+
