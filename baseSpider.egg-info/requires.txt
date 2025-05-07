@@ -1,0 +1,6 @@
+fake_useragent
+playwright
+redis
+ddddocr
+requests
+PyPDF2
