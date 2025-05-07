@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 
 
-spider_id = '676e4fe0d08b88e0bb9c1ced'
+spider_id = '680b1c7676684571850e79b1'
 url = "http://121.37.171.89:18080/api/schedules"
 
 headers = {
@@ -102,17 +102,18 @@ def read_csv():
 
 def random_cron():
 
-    # hour1 = random.randint(7,8)
-    hour2 = random.randint(13,14)
-    hour3 = random.randint(22,23)
+    hour1 = 9
+    hour2 = 12
+    hour3 = 16
+    hour4 = 20
     # hour4 = random.randint(22, 23)
 
     minute = random.randint(0, 45)
 
-    corn = '{minute} {hour2},{hour3} * * *'
+    corn = '{minute} {hour1},{hour2},{hour3},{hour4} * * *'
     
     
-    return corn.format(minute=minute, hour2=hour2, hour3=hour3)
+    return corn.format(minute=minute, hour1=hour1, hour2=hour2, hour3=hour3, hour4=hour4)
 
 def get_all_job(spider_id):
 
@@ -158,7 +159,7 @@ def delete_job(job_id_list):
 if __name__ == "__main__":
 
 
-    path = 'spiders'
+    path = 'spiders/zhaopin'
     directory_path = os.path.abspath(os.path.dirname(__file__)) + "/" + path
 
 
@@ -172,6 +173,6 @@ if __name__ == "__main__":
         upload_data(data_list)
 
     if mode == 3:
-        spider_id = '676e4fe0d08b88e0bb9c1ced'
+        spider_id = '680b1c7676684571850e79b1'
         job_id_list = get_all_job(spider_id)
         delete_job(job_id_list)
