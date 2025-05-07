@@ -147,6 +147,7 @@ class WoCloudAI:
 
 # https://cs.nuaa.edu.cn/10847/list.htm
 # https://www.njitt.edu.cn/tzgg/list.htm
+# https://zbcag.jsit.edu.cn/cggghwl/index.chtml
 
 
 
@@ -154,9 +155,8 @@ if __name__ == "__main__":
 
     ai = WoCloudAI()
 
-
     # Example URL
-    url = "https://www.njitt.edu.cn/tzgg/list.htm"
+    url = "https://zbcag.jsit.edu.cn/cggghwl/index.chtml"
 
     # Get the content from the URL
     content = ai.get_content(url)
@@ -164,6 +164,11 @@ if __name__ == "__main__":
         print("Content retrieved successfully.")
     else:
         print("Failed to retrieve content.")
+
+    
+    with open("content.html", "w", encoding="utf-8") as f:
+        f.write(content)
+
 
     prompt = ai.get_prompt(content)
 
