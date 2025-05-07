@@ -37,9 +37,10 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
 
     custom_settings = {
-       
+       'DOWNLOADER_MIDDLEWARES': {
+            "project.middlewares.ProjectDownloaderMiddleware": 543,  
+        },
     }
-
 
 
     lis = ['0600']
