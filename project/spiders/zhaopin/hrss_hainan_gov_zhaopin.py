@@ -36,6 +36,12 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     }
 
 
+    custom_settings = {
+       
+    }
+
+
+
     lis = ['0600']
 
     
