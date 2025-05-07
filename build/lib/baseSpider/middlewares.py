@@ -203,7 +203,7 @@ class BaseRetryMiddleware(RetryMiddleware):
 
     def process_response(self, request, response, spider):
         if request.meta.get('dont_retry', False):
-            logger.debug("Ignoring %s: %s", request, response.status)
+            logger.info("Ignoring %s: %s", request, response.status)
             return response
 
         if response.status in self.RETRY_HTTP_CODES:
@@ -214,11 +214,11 @@ class BaseRetryMiddleware(RetryMiddleware):
 
     def process_exception(self, request, exception, spider):
         if request.meta.get('dont_retry', False):
-            logger.debug("Ignoring %s: %s", request, exception)
+            logger.info("Ignoring %s: %s", request, exception)
             return None
 
         if isinstance(exception, self.EXCEPTIONS_TO_RETRY):
-            logger.debug("Retrying %s due to %s", request.url, exception)
+            logger.info("Retrying %s due to %s", request.url, exception)
             return self._retry(request, exception, spider)
         else:
             return None  # 确保返回 None
@@ -227,7 +227,7 @@ class BaseRetryMiddleware(RetryMiddleware):
         retries = request.meta.get('retry_times', 0) + 1
 
         if retries <= self.max_retry_times:
-            logger.debug("Retrying %(request)s (failed %(retries)d times): %(reason)s",
+            logger.info("Retrying %(request)s (failed %(retries)d times): %(reason)s",
                          {'request': request, 'retries': retries, 'reason': reason},
                          extra={'spider': spider})
             retryreq = request.copy()
@@ -241,7 +241,7 @@ class BaseRetryMiddleware(RetryMiddleware):
 
             return retryreq
         else:
-            logger.debug("Gave up retrying %(request)s (failed %(retries)d times): %(reason)s",
+            logger.info("Gave up retrying %(request)s (failed %(retries)d times): %(reason)s",
                          {'request': request, 'retries': retries, 'reason': reason},
                          extra={'spider': spider})
 

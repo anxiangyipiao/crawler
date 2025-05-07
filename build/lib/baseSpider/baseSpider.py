@@ -95,7 +95,7 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
             'ROBOTSTXT_OBEY': False,
             'DOWNLOAD_DELAY': 3,
             'CONCURRENT_REQUESTS_PER_IP': 8,
-            # 'RETRY_ENABLED': False,
+            'RETRY_ENABLED': False,
             'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
             'LOG_LEVEL':'INFO',
     }
