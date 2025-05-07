@@ -54,8 +54,6 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
     
     def parse(self, response):
-
-        print(response.request.meta)
         
         page = response.meta['page']
 
