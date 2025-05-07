@@ -88,6 +88,7 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
                 "baseSpider.middlewares.BaseHeaderMiddleware": 1,  # 添加请求头
                 "baseSpider.middlewares.PlaywrightMiddleware": 2,  # 使用playwright渲染页面
                 "baseSpider.middlewares.BaseRetryMiddleware": 600,  # 重试
+                'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,  # 重试中间件禁用
             },
             'ITEM_PIPELINES': {
                 "baseSpider.pipelines.baseSpiderPipeline": 300,
@@ -95,7 +96,7 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
             'ROBOTSTXT_OBEY': False,
             'DOWNLOAD_DELAY': 3,
             'CONCURRENT_REQUESTS_PER_IP': 8,
-            'RETRY_ENABLED': False,
+            'RETRY_ENABLED': True,
             'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
             'LOG_LEVEL':'INFO',
     }
