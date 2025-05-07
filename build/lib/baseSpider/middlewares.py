@@ -3,11 +3,14 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import json
+import requests
 from scrapy import signals
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 from fake_useragent import UserAgent
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
+from scrapy.utils.response import response_status_message
 import logging
 from scrapy.http import HtmlResponse
 from scrapy.utils.defer import deferred_from_coro
@@ -183,54 +186,76 @@ class PlaywrightMiddleware:
 
 class BaseRetryMiddleware(RetryMiddleware):
 
-    EXCEPTIONS_TO_RETRY = (TimeoutError, 
+    EXCEPTIONS_TO_RETRY = (TimeoutError,
                            ConnectionRefusedError,
                            IOError, ValueError)
 
-    def process_request(self, request, spider):
+    def __init__(self, settings):
+        super().__init__(settings)
+        self.RETRY_HTTP_CODES = set(settings.getlist('RETRY_HTTP_CODES'))
+        self.max_retry_times = settings.getint('RETRY_TIMES')
+        self.proxy_url = settings.get('PROXY_URL')  # 从 settings 中获取
+        self.proxy_token = settings.get('PROXY_TOKEN')
+        self.proxy_headers = {
+            'token': self.proxy_token,
+            'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        }
 
-        # if request.callback.__name__ == 'parse_content_detal':
-
-        #     print('parse_content_detal')
-
-        return None
-    
     def process_response(self, request, response, spider):
-         
+        if request.meta.get('dont_retry', False):
+            logger.debug("Ignoring %s: %s", request, response.status)
+            return response
+
+        if response.status in self.RETRY_HTTP_CODES:
+            reason = response_status_message(response.status)
+            return self._retry(request, reason, spider) or response
+
         return response
-   
+
     def process_exception(self, request, exception, spider):
-        
-        # if request.callback.__name__ == 'parse_content_detal':
-            
-            retries = request.meta.get('retry_times', 0) + 1
+        if request.meta.get('dont_retry', False):
+            logger.debug("Ignoring %s: %s", request, exception)
+            return None
 
-            if retries <= self.max_retry_times:
-                logger.debug("Retrying %(request)s (failed %(retries)d times): %(reason)s",
-                             {'request': request, 'retries': retries, 'reason': repr(exception)},
-                             extra={'spider': spider})
-                retryreq = request.copy()
-                retryreq.meta['retry_times'] = retries
-                retryreq.priority = request.priority + self.priority_adjust
-                retryreq.dont_filter = True
-                retryreq.headers['Cache-Control'] = 'no-cache'
-                
-                # 添加代理支持
-                # proxy = self.get_proxy(request)
-                # if proxy:
-                #     retryreq.meta['proxy'] = proxy
-                
-                return retryreq
-            else:
-                logger.debug("Gave up retrying %(request)s (failed %(retries)d times): %(reason)s",
-                             {'request': request, 'retries': retries, 'reason': repr(exception)},
-                             extra={'spider': spider})
+        if isinstance(exception, self.EXCEPTIONS_TO_RETRY):
+            logger.debug("Retrying %s due to %s", request.url, exception)
+            return self._retry(request, exception, spider)
+        else:
+            return None  # 确保返回 None
 
-    def get_proxy(self, request):
-        # 根据请求动态获取代理地址
-        # 这里仅作为一个示例，实际应用中应根据具体情况来选择代理
-        proxies = [
-            "http://proxy1.example.com:8080",
-        ]
-        return proxies[0]
+    def _retry(self, request, reason, spider):
+        retries = request.meta.get('retry_times', 0) + 1
 
+        if retries <= self.max_retry_times:
+            logger.debug("Retrying %(request)s (failed %(retries)d times): %(reason)s",
+                         {'request': request, 'retries': retries, 'reason': reason},
+                         extra={'spider': spider})
+            retryreq = request.copy()
+            retryreq.meta['retry_times'] = retries
+            retryreq.dont_filter = True
+
+            # 添加代理支持
+            proxy = self.get_proxy()
+            if proxy:
+                retryreq.meta['proxy'] = proxy
+
+            return retryreq
+        else:
+            logger.debug("Gave up retrying %(request)s (failed %(retries)d times): %(reason)s",
+                         {'request': request, 'retries': retries, 'reason': reason},
+                         extra={'spider': spider})
+
+    def get_proxy(self):
+        try:
+            response = requests.post(self.proxy_url, headers=self.proxy_headers)
+            response.raise_for_status()  # 检查状态码
+            body = json.loads(response.text)
+            process = body['data']
+            proxies = {
+                "http": f"http://{process}",  # HTTP代理
+                "https": f"http://{process}",  # HTTPS代理
+            }
+            return proxies
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"Failed to get proxy: {e}")
+            return None
