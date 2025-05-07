@@ -203,6 +203,7 @@ class BaseRetryMiddleware(RetryMiddleware):
 
     def process_response(self, request, response, spider):
         if request.meta.get('dont_retry', False):
+            logger.debug("Ignoring %s: %s", request, response.status)
             return response
 
         if response.status in self.RETRY_HTTP_CODES:
@@ -213,6 +214,7 @@ class BaseRetryMiddleware(RetryMiddleware):
 
     def process_exception(self, request, exception, spider):
         if request.meta.get('dont_retry', False):
+            logger.debug("Ignoring %s: %s", request, exception)
             return None
 
         if isinstance(exception, self.EXCEPTIONS_TO_RETRY):
