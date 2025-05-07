@@ -1,6 +1,6 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: baseSpider
-Version: 1.1.1
+Version: 1.0
 Summary: Base spider needed by all other spiders overfall.
 Author: EastonLee
 Author-email: appelapp2017@outlook.com
@@ -10,3 +10,7 @@ Requires-Dist: redis
 Requires-Dist: ddddocr
 Requires-Dist: requests
 Requires-Dist: PyPDF2
+Dynamic: author
+Dynamic: author-email
+Dynamic: requires-dist
+Dynamic: summary
