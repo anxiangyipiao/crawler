@@ -275,7 +275,7 @@ if __name__ == "__main__":
     ai = WoCloudAI()
 
     # Example URL
-    url = "https://www.gzsport.edu.cn/node/107"
+    url = "http://www.haue.edu.cn/xwdt/tzgg.htm"
 
     ai.run(url)
 
