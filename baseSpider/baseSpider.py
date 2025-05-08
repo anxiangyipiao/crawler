@@ -1,7 +1,6 @@
 import inspect
 import json
 import random
-import time
 from urllib.parse import urljoin
 from scrapy.exceptions import CloseSpider
 import scrapy
@@ -939,13 +938,11 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
             logger.error("Parse json error",e)
             return None
         
-
     # 自动提取url和title
-    def auto_extract_url_title(self,item:Selector)-> tuple:   
+    def auto_extract_url_title(self,item:Selector,res_url)-> tuple:   
 
-      
         """
-        从选择器项中智能提取标题和URL
+        从选择器项中智能提取标题和URL, 适合对象为<a>标签的情况，存在href。标题优先使用title属性，如果title属性为空，则使用元素文本内容。
         
         Args:
             item (Selector): Scrapy选择器对象
@@ -981,6 +978,7 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
 
                 # 将有效的标题和URL添加到候选项
                 if title and url:
+                    url = urljoin(res_url, url)  # 确保URL是完整的
                     candidates.append((title, url))
         
         # 如果没有有效候选项，返回None
