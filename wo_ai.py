@@ -226,7 +226,7 @@ class WoCloudAI:
         date_text = "".join(date_element).strip()
         date_match = re.search(r"\d{4}[-/.年]\d{2}[-/.月]\d{2}", date_text)
         if date_match:
-            item["date"] = date_match.group(0)
+            item["date"] = date_match.group(0).replace("年", "-").replace("月", "-").replace("日", "").replace("/", "-").replace(".", "-")
         else:
             item["date"] = None
 
@@ -254,7 +254,7 @@ class WoCloudAI:
         items = self.get_res_by_xpath(xpath_response, content, res_url)
 
         # 打印提取的信息，而不是原始HTML
-        for i, item in enumerate(items):  # 只打印前5项作为示例
+        for i, item in enumerate(items[:3]):  # 只打印前3项作为示例
             print(f"\n--- 项目 {i+1} ---")
             for key, value in item.items():
                     print(f"{key}: {value}")
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     ai = WoCloudAI()
 
     # Example URL
-    url = "https://www.gdqy.edu.cn/cggg.htm"
+    url = "http://www.yzgzx.com/cgzb/list.htm"
 
     ai.run(url)
 
