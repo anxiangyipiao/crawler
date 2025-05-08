@@ -196,30 +196,7 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
             datetime: 格式化后的 datetime 对象，格式为 '%Y-%m-%d'。
         
         """
-        
-        # if '/' in publish_time:
-        #     publish_time = publish_time.replace('/', '-')
-        # if ' ' in publish_time:
-        #     publish_time = publish_time.replace(' ', '')
-        # if '.' in publish_time:
-        #     publish_time = publish_time.replace('.', '-')
-        # if '[' in publish_time:
-        #     publish_time = publish_time.replace('[', '')
-        # if ']' in publish_time:
-        #     publish_time = publish_time.replace(']', '')
-        # if '年' in publish_time:
-        #     publish_time = publish_time.replace('年', '-')    
-        # if '月' in publish_time:
-        #     publish_time = publish_time.replace('月', '-')
-        # if '日' in publish_time:
-        #     publish_time = publish_time.replace('日', '')
-
-
-        # publish_time = self.extract_number(publish_time)
-
-        # if len(publish_time) > 10:
-        #     publish_time = publish_time[:10]
-
+    
         try:
             time = datetime.strptime(str(publish_time), '%Y-%m-%d')
 
@@ -939,7 +916,7 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
             return None
         
     # 自动提取url和title
-    def auto_extract_url_title(self,item:Selector,res_url)-> tuple:   
+    def auto_extract_url_title(self,node:Selector,res_url)-> tuple:   
 
         """
         从选择器项中智能提取标题和URL, 适合对象为<a>标签的情况，存在href。标题优先使用title属性，如果title属性为空，则使用元素文本内容。
@@ -951,8 +928,8 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
             tuple: (标题文本, URL) 如果无法提取则返回 (None, None)
         """
         # 尝试找到所有可能的链接元素
-        list_elements = item.xpath(".//a")
-        
+        list_elements = node.xpath(".//a")
+    
         # 如果没有找到链接元素，返回None
         if not list_elements:
             return None, None
@@ -963,14 +940,14 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
         # 处理所有找到的元素
         for element in list_elements:
             # 获取URL
-            url = element.get("href",None)
+            url = element.attrib.get('href')
             
             # 优先使用title属性作为标题
-            title = element.get("title",None)
+            title = element.attrib.get('title')
             
             # 如果title属性为空，尝试使用元素文本内容
             if not title or not title.strip():
-                title = element.xpath("string(.)").strip()
+                title = element.xpath('string(.)').get().strip()
             
             # 规范化标题文本(去除多余空白)
             if title:
