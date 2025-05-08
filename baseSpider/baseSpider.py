@@ -939,3 +939,42 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
             return None
         
 
+    # 自动提取url和title
+    def auto_extract_url_title(self,item)-> tuple:   
+
+        if title_element is None:
+            return None
+        
+        if len(title_element) == 1:
+
+            title_attr = title_element[0].get("title")
+            if title_attr and title_attr.strip():
+
+                title = re.sub(r'\s+', '', title_attr.strip())
+
+                return title,title_element[0].get("href")
+            else:
+                # 如果没有title属性或title为空，则使用元素文本内容
+                title = re.sub(r'\s+', '', title_element[0].xpath("string(.)").strip())
+                return title,title_element[0].get("href")
+                
+            
+        if len(title_element) > 1:
+            # 如果有多个元素，返回最长元素的文本内容及其URL
+            longest_text = ""
+            longest_url = ""
+            for element in title_element:
+                if element.get("title") and element.get("title").strip():
+                    text = element.get("title").strip()
+                else:
+                    text = element.xpath("string(.)").strip()
+                
+                # 当找到更长的文本时，同时保存其URL
+                if len(text) > len(longest_text):
+                    longest_text = text
+                    longest_url = element.get("href")  # 获取当前最长文本对应的URL
+            
+            # re 去掉空格
+            longest_text = re.sub(r'\s+', '', longest_text)
+
+            return longest_text, longest_url  # 返回最长文本和对应的URL
