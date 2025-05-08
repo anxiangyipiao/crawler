@@ -3,6 +3,7 @@ import re
 import requests
 import random
 import os
+import urllib
 
 
 X_YP_Access_Token = "a36a90f6-d119-4b50-970f-30894a2f39fa"
@@ -90,15 +91,17 @@ class WoCloudAI:
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
 
+    #  - 最多使用3个div层级，可以使用//跳过中间层级或使用特定的属性直接定位
     def get_prompt(self, contents):
 
         prompt = """
         提取招标公告列表的XPath表达式，仅返回一个准确的XPath表达式，无需其他内容。
 
         目标元素特征：
-        - 通常在列表结构中(如ul/li或table/tr)
+        - 通常在列表结构中(如ul,tr,div等)
         - 返回的必须是完整的列表项元素本身，而非其中的链接元素
-        - 最多使用3个div层级，可以使用//跳过中间层级或使用特定的属性直接定位
+        - 必须以//开头，使用特定的属性直接定位
+       
         
         分析此HTML并返回最简洁有效的XPath，确保表达式停止在列表项级别而不深入到子元素:
         {text}
@@ -118,12 +121,25 @@ class WoCloudAI:
             print(f"Error: {response.status_code}")
             return None
         
+         # 尝试从Content-Type头部获取正确的编码
+        content_type = response.headers.get('Content-Type', '')
+        encoding_match = re.search(r'charset=(\S+)', content_type)
+        
+        if encoding_match:
+            encoding = encoding_match.group(1)
+        else:
+            # 如果响应头没有指定编码，使用apparent_encoding
+            encoding = response.apparent_encoding
+        
+        # 显式设置响应的编码
+        response.encoding = encoding
+        
         # 处理响应内容
         # 例如，解析HTML、提取数据等
 
         cleaned_response = self.clean_response(response.text)
 
-        return cleaned_response
+        return cleaned_response,response.url
 
     def clean_response(self, full_response):
        
@@ -141,7 +157,7 @@ class WoCloudAI:
 
         return full_response
 
-    def get_res_by_xpath(self, xpath, content):
+    def get_res_by_xpath(self, xpath, content, res_url):
         # 使用lxml或BeautifulSoup等库解析HTML并提取数据
         from lxml import etree
 
@@ -151,13 +167,76 @@ class WoCloudAI:
         # 使用XPath提取数据
         elements = tree.xpath(xpath)
 
-        # 返回提取的元素列表
-        return elements
+        result = []
+        for element in elements:
+            # 提取每个列表项的有用信息，而不是直接转换整个HTML
+            item_info = self.extract_item_info(element,res_url)
+            result.append(item_info)
+            
+        return result
+
+    def extract_title_url_info(self, title_element):
+
+        if title_element is None:
+            return None
+        
+        if len(title_element) == 1:
+
+            title_attr = title_element[0].get("title")
+            if title_attr and title_attr.strip():
+                return title_attr.strip(),title_element[0].get("href")
+            else:
+                # 如果没有title属性或title为空，则使用元素文本内容
+                return title_element[0].xpath("string(.)").strip(),title_element[0].get("href")
+            
+        if len(title_element) > 1:
+            # 如果有多个元素，返回最长元素的文本内容及其URL
+            longest_text = ""
+            longest_url = ""
+            for element in title_element:
+                if element.get("title") and element.get("title").strip():
+                    text = element.get("title").strip()
+                else:
+                    text = element.xpath("string(.)").strip()
+                
+                # 当找到更长的文本时，同时保存其URL
+                if len(text) > len(longest_text):
+                    longest_text = text
+                    longest_url = element.get("href")  # 获取当前最长文本对应的URL
+            
+            return longest_text, longest_url  # 返回最长文本和对应的URL
+
+    def extract_item_info(self, element,res_url):
+        """从列表项元素中提取标题、日期和链接等信息"""
+
+        # 创建一个字典来存储提取的信息
+        item = {}
+        
+        # 尝试提取标题 - 通常在a标签内
+        title_url_element = element.xpath(".//a")
+        
+        if title_url_element:
+           
+            item["title"],item["url"] = self.extract_title_url_info(title_url_element)
+            item["url"] = urllib.parse.urljoin(res_url, item["url"])  # 处理相对链接
+        
+        
+        # 尝试提取日期 2021-05-11 使用regex匹配
+        date_element = element.xpath(".//text()")
+        date_text = "".join(date_element).strip()
+        date_match = re.search(r"\d{4}[-/.年]\d{2}[-/.月]\d{2}", date_text)
+        if date_match:
+            item["date"] = date_match.group(0)
+        else:
+            item["date"] = None
+
+        
+        return item
 
     def run(self, url):
 
         # 获取网页内容
-        content = self.get_content(url)
+        content,res_url = self.get_content(url)
 
         # 获得prompt
         prompt = self.get_prompt(content)
@@ -167,17 +246,28 @@ class WoCloudAI:
 
         print("XPath response:", xpath_response)
 
+        if xpath_response is None:
+            print("Failed to get XPath response.")
+            return
+
         # 使用XPath提取数据
-        elements = self.get_res_by_xpath(xpath_response, content)
+        items = self.get_res_by_xpath(xpath_response, content, res_url)
 
-        print("Extracted elements:", elements)
-
+        # 打印提取的信息，而不是原始HTML
+        for i, item in enumerate(items):  # 只打印前5项作为示例
+            print(f"\n--- 项目 {i+1} ---")
+            for key, value in item.items():
+                    print(f"{key}: {value}")
 
 
 # https://cs.nuaa.edu.cn/10847/list.htm
 # https://www.njitt.edu.cn/tzgg/list.htm
 # https://zbcag.jsit.edu.cn/cggghwl/index.chtml
+# https://lntdxy.com/sylm/zbgg.htm
 
+
+# https://www.whit.edu.cn/index/zcyzc.htm
+# https://www.gzgsc.edu.cn/zsyzb/cgzb/cgzb.htm
 
 
 if __name__ == "__main__":
@@ -185,7 +275,7 @@ if __name__ == "__main__":
     ai = WoCloudAI()
 
     # Example URL
-    url = "https://lntdxy.com/sylm/zbgg.htm"
+    url = "https://www.gdqy.edu.cn/cggg.htm"
 
     ai.run(url)
 
