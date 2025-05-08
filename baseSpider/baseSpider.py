@@ -12,6 +12,7 @@ from baseSpider.items import BaseItem,RequestItem
 from scrapy import signals
 import logging
 import re
+from scrapy.selector.unified import Selector
 
 
 
@@ -940,41 +941,55 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
         
 
     # 自动提取url和title
-    def auto_extract_url_title(self,item)-> tuple:   
+    def auto_extract_url_title(self,item:Selector)-> tuple:   
 
-        if title_element is None:
-            return None
+      
+        """
+        从选择器项中智能提取标题和URL
         
-        if len(title_element) == 1:
-
-            title_attr = title_element[0].get("title")
-            if title_attr and title_attr.strip():
-
-                title = re.sub(r'\s+', '', title_attr.strip())
-
-                return title,title_element[0].get("href")
-            else:
-                # 如果没有title属性或title为空，则使用元素文本内容
-                title = re.sub(r'\s+', '', title_element[0].xpath("string(.)").strip())
-                return title,title_element[0].get("href")
-                
+        Args:
+            item (Selector): Scrapy选择器对象
             
-        if len(title_element) > 1:
-            # 如果有多个元素，返回最长元素的文本内容及其URL
-            longest_text = ""
-            longest_url = ""
-            for element in title_element:
-                if element.get("title") and element.get("title").strip():
-                    text = element.get("title").strip()
-                else:
-                    text = element.xpath("string(.)").strip()
-                
-                # 当找到更长的文本时，同时保存其URL
-                if len(text) > len(longest_text):
-                    longest_text = text
-                    longest_url = element.get("href")  # 获取当前最长文本对应的URL
+        Returns:
+            tuple: (标题文本, URL) 如果无法提取则返回 (None, None)
+        """
+        # 尝试找到所有可能的链接元素
+        list_elements = item.xpath(".//a")
+        
+        # 如果没有找到链接元素，返回None
+        if not list_elements:
+            return None, None
+        
+        # 存储候选项
+        candidates = []
+        
+        # 处理所有找到的元素
+        for element in list_elements:
+            # 获取URL
+            url = element.get("href",None)
             
-            # re 去掉空格
-            longest_text = re.sub(r'\s+', '', longest_text)
+            # 优先使用title属性作为标题
+            title = element.get("title",None)
+            
+            # 如果title属性为空，尝试使用元素文本内容
+            if not title or not title.strip():
+                title = element.xpath("string(.)").strip()
+            
+            # 规范化标题文本(去除多余空白)
+            if title:
+                title = re.sub(r'\s+', '', title.strip())
 
-            return longest_text, longest_url  # 返回最长文本和对应的URL
+                # 将有效的标题和URL添加到候选项
+                if title and url:
+                    candidates.append((title, url))
+        
+        # 如果没有有效候选项，返回None
+        if not candidates:
+            return None, None
+        
+        # 如果只有一个候选项，直接返回
+        if len(candidates) == 1:
+            return candidates[0]
+        
+        # 有多个候选项，选择标题最长的
+        return max(candidates, key=lambda x: len(x[0]))
