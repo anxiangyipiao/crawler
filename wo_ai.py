@@ -64,7 +64,7 @@ class WoCloudAI:
             "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
         }
 
-    def query(self, input_text="aaa",  model_id=0, tag=0, history=None):
+    def query(self, input_text="",  model_id=0, tag=0, history=None):
 
         # model_id: 0 是默认模型，1 是 deepseek
         # input_text： 输入文本
@@ -108,11 +108,43 @@ class WoCloudAI:
         """
         return prompt.format(text=contents)
         
-    def get_content(self,url):
+    def get_content_with_window(self,url):
 
         headers = {
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            "User-Agent": "Mozilla/5.0 (Linux; Android 8; Vivo X21 Build/O11019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.91 Mobile Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            print(f"Error: {response.status_code}")
+            return None
+        
+         # 尝试从Content-Type头部获取正确的编码
+        content_type = response.headers.get('Content-Type', '')
+        encoding_match = re.search(r'charset=(\S+)', content_type)
+        
+        if encoding_match:
+            encoding = encoding_match.group(1)
+        else:
+            # 如果响应头没有指定编码，使用apparent_encoding
+            encoding = response.apparent_encoding
+        
+        # 显式设置响应的编码
+        response.encoding = encoding
+        
+        # 处理响应内容
+        # 例如，解析HTML、提取数据等
+
+        cleaned_response = self.clean_response(response.text)
+
+        return cleaned_response,response.url
+
+    def get_content_with_mobile(self,url):
+        headers = {
+            'User-Agent':  "Mozilla/5.0 (Linux; Android 8; Vivo X21 Build/O11019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.91 Mobile Safari/537.36",
+            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         }
 
         response = requests.get(url, headers=headers)
@@ -178,7 +210,7 @@ class WoCloudAI:
     def extract_title_url_info(self, title_element):
 
         if title_element is None:
-            return None
+            return None, None
         
         if len(title_element) == 1:
 
@@ -222,21 +254,35 @@ class WoCloudAI:
         
         
         # 尝试提取日期 2021-05-11 使用regex匹配
-        date_element = element.xpath(".//text()")
-        date_text = "".join(date_element).strip()
-        date_match = re.search(r"\d{4}[-/.年]\d{2}[-/.月]\d{2}", date_text)
+        date_text = element.xpath("string(.)").strip()
+
+        date_patterns = [
+            # 标准年月日格式（支持短横线、斜杠、点和中文年月日作为分隔符）
+            r"\d{4}[-/.年]\d{,2}[-/.月]\d{1,2}[日]?",
+        ]
+       
+        # 尝试匹配所有模式
+        date_match = None
+        for pattern in date_patterns:
+            match = re.search(pattern, date_text)
+            if match:
+                date_match = match
+                break
+
         if date_match:
-            item["date"] = date_match.group(0).replace("年", "-").replace("月", "-").replace("日", "").replace("/", "-").replace(".", "-")
+            raw_date = date_match.group(0)
+            # 标准化日期格式为yyyy-MM-dd
+            clean_date = raw_date.replace("年", "-").replace("月", "-").replace("日", "").replace("/", "-").replace(".", "-")
+            # 处理可能的多余空格和时间部分
+            clean_date = re.sub(r'\s+.*$', '', clean_date)  # 移除时间部分
+            item["date"] = clean_date
         else:
             item["date"] = None
 
         
         return item
 
-    def run(self, url):
-
-        # 获取网页内容
-        content,res_url = self.get_content(url)
+    def run_test(self, content,res_url):
 
         # 获得prompt
         prompt = self.get_prompt(content)
@@ -244,11 +290,9 @@ class WoCloudAI:
         # 查询AI模型,提取XPath表达式
         xpath_response = self.query(input_text=prompt)
 
-        print("XPath response:", xpath_response)
-
         if xpath_response is None:
             print("Failed to get XPath response.")
-            return
+            return False,None
 
         # 使用XPath提取数据
         items = self.get_res_by_xpath(xpath_response, content, res_url)
@@ -259,15 +303,56 @@ class WoCloudAI:
             for key, value in item.items():
                     print(f"{key}: {value}")
 
+        title = items[0].get("title")
+        url = items[0].get("url")
+        date = items[0].get("date")
 
-# https://cs.nuaa.edu.cn/10847/list.htm
-# https://www.njitt.edu.cn/tzgg/list.htm
-# https://zbcag.jsit.edu.cn/cggghwl/index.chtml
-# https://lntdxy.com/sylm/zbgg.htm
+        if title and url and date:
+            
+            return True,xpath_response
+
+        return False,xpath_response
+           
+
+    def run_mobile(self,url):
+
+        # 获得prompt
+        content,res_url = self.get_content_with_mobile(url)
+
+        judge,xpath_response = self.run_test(content,res_url)
+
+        return judge,xpath_response
+
+    def run_window(self,url):
+            
+        # 获得prompt
+        content,res_url = self.get_content_with_window(url)
+    
+        judge,xpath_response = self.run_test(content,res_url)
+
+        return judge,xpath_response
 
 
-# https://www.whit.edu.cn/index/zcyzc.htm
-# https://www.gzgsc.edu.cn/zsyzb/cgzb/cgzb.htm
+    def run(self, url):
+
+    
+        # 先尝试移动端
+        judge,xpath_response = self.run_mobile(url)
+
+        if judge:
+            print("移动端成功")
+            print("XPath response:", xpath_response)
+            return
+
+        # 如果移动端失败，则尝试PC端
+        judge,xpath_response = self.run_window(url)
+
+        if judge:
+            print("PC端成功")
+            print("XPath response:", xpath_response)
+            return
+
+        print("都失败了")
 
 
 if __name__ == "__main__":
@@ -275,7 +360,7 @@ if __name__ == "__main__":
     ai = WoCloudAI()
 
     # Example URL
-    url = "http://www.haue.edu.cn/xwdt/tzgg.htm"
+    url = "https://www.gxmzu.edu.cn/mdxww1/tztg.htm"
 
     ai.run(url)
 
