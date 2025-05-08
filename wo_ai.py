@@ -5,9 +5,6 @@ import random
 import os
 
 
-
-
-
 X_YP_Access_Token = "a36a90f6-d119-4b50-970f-30894a2f39fa"
 
 
@@ -87,7 +84,8 @@ class WoCloudAI:
                     json_line = json.loads(decoded_line)  # Parse each line as JSON 
                     full_response += json_line["response"]  # Append the 'response' value
                     
-            print("Full response:", full_response) 
+            # print("Full response:", full_response) 
+            return full_response  # Return the full response
 
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
@@ -143,6 +141,37 @@ class WoCloudAI:
 
         return full_response
 
+    def get_res_by_xpath(self, xpath, content):
+        # 使用lxml或BeautifulSoup等库解析HTML并提取数据
+        from lxml import etree
+
+        # 解析HTML
+        tree = etree.HTML(content)
+
+        # 使用XPath提取数据
+        elements = tree.xpath(xpath)
+
+        # 返回提取的元素列表
+        return elements
+
+    def run(self, url):
+
+        # 获取网页内容
+        content = self.get_content(url)
+
+        # 获得prompt
+        prompt = self.get_prompt(content)
+
+        # 查询AI模型,提取XPath表达式
+        xpath_response = self.query(input_text=prompt)
+
+        print("XPath response:", xpath_response)
+
+        # 使用XPath提取数据
+        elements = self.get_res_by_xpath(xpath_response, content)
+
+        print("Extracted elements:", elements)
+
 
 
 # https://cs.nuaa.edu.cn/10847/list.htm
@@ -156,23 +185,9 @@ if __name__ == "__main__":
     ai = WoCloudAI()
 
     # Example URL
-    url = "https://zbcag.jsit.edu.cn/cggghwl/index.chtml"
+    url = "https://lntdxy.com/sylm/zbgg.htm"
 
-    # Get the content from the URL
-    content = ai.get_content(url)
-    if content:
-        print("Content retrieved successfully.")
-    else:
-        print("Failed to retrieve content.")
-
-    
-    with open("content.html", "w", encoding="utf-8") as f:
-        f.write(content)
-
-
-    prompt = ai.get_prompt(content)
-
-    ai.query(input_text=prompt)  # Example usage
+    ai.run(url)
 
 
 
