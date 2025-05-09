@@ -5,14 +5,14 @@ import re
 
 class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     # ggzy: 公共资源网     zfcg：政府采购
-    name = "xztu_zhaopin"
-    start_urls = 'http://www.xztu.edu.cn/index/{type}.htm'
+    name = "hutb_zhaopin"
+    start_urls = 'https://www.hutb.edu.cn/p222/{type}.html'
     next_base_urls = 'https://www.dtdjzx.gov.cn/{type}/index_{page}.jhtml'
     contents_base_urls = ''  # 用于拼接详情页网址
-    province = "山东省"  # 必填，爬虫省份
+    province = ""  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
-    site_name = '忻州师范学院'
+    site_name = '湖南工商大学'
  
 
     timeRange = 7
@@ -20,11 +20,11 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
     use_mobile_ua = True
     
 
-    detail_xpath = '//div[@class="content-box"]'
+    detail_xpath = '//div[@class="cejright"]'
 
 
 
-    lis = ['tzgg']
+    lis = ['zpxx']
 
     
     def start_requests(self):
@@ -42,10 +42,12 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
 
     
     def parse(self, response):
-        
+
+    
         page = response.meta['page']
 
-        node_list  = response.xpath("//ul/li[@class='list-item']")
+        node_list  = response.xpath("//div[@class='ejlist']/ul/li")
+
  
         for node in node_list:
 
@@ -65,7 +67,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
                     'meta': {'item': baseItem},
                     'callback': self.parse_content_detal,
                     'errback': self.errback_httpbin,
-                    'headers':self.headers,
+                    
                 }
 
              # 判断是否继续爬取
@@ -83,7 +85,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(BaseSpiderObject):
                     'meta': {'page': page, 'type': response.meta['type']},
                     'callback': self.parse,
                     'params': None,
-                    'headers':self.headers,
+                   
                 }
         # 翻页
         yield self.request_next_page(baseItem, page, request_params)

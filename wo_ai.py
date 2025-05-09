@@ -72,7 +72,7 @@ class WoCloudAI:
         if history is None:
             history = []
 
-        data = {"input": input_text, "modelId": model_id, "tag": tag, "history": history}
+        data = {"input": input_text, "modelId": model_id, "tag": tag, "history": None}
 
         try:
             response = requests.post(self.url, headers=self.headers, json=data)
@@ -91,20 +91,31 @@ class WoCloudAI:
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
 
-    #  - 最多使用3个div层级，可以使用//跳过中间层级或使用特定的属性直接定位
+
     def get_prompt(self, contents):
 
         prompt = """
-        提取招标公告列表的XPath表达式，仅返回一个准确的XPath表达式，无需其他内容。
+            请分析HTML并提取招标公告列表的XPath表达式，遵循以下分析流程：
 
-        目标元素特征：
-        - 通常在列表结构中(如ul,tr,div,a等)
-        - 返回的必须是完整的列表项元素本身，而非其中的链接元素
-        - 必须以//开头，使用特定的属性直接定位
-       
-        
-        分析此HTML并返回最简洁有效的XPath，确保表达式停止在列表项级别而不深入到子元素:
-        {text}
+            步骤1：识别招标列表结构
+            - 查找包含重复项的列表结构（如ul/li、table/tr、div组等）
+            - 确定招标公告的特征：必须包含标题、日期、链接，且格式统一
+            - 排除导航菜单、页脚链接等非招标内容的列表
+
+            步骤2：构建精确XPath
+            - 为找到的列表项创建XPath，确保选择整个列表项而非子元素
+            - 优先使用id、class等特定属性进行定位
+            - 确保XPath能选中所有目标列表项，不多不少
+
+            步骤3：优化表达式
+            - 确保XPath以//开头，便于在任何位置查找
+            - 使用最简洁但有效的选择器（避免过长或过于复杂的表达式）
+            - 验证XPath能否准确定位到列表项级别
+            
+            示例输出格式：//div[@class='news-list']/ul/li
+            
+            分析此HTML并仅返回一个最准确的XPath表达式，无需解释：
+            {text}
         """
         return prompt.format(text=contents)
         
@@ -185,8 +196,16 @@ class WoCloudAI:
         # 剔除css，script等标签
         full_response = re.sub(r"<script.*?>.*?</script>", "", full_response, flags=re.DOTALL)
         full_response = re.sub(r"<style.*?>.*?</style>", "", full_response, flags=re.DOTALL)
-
-
+        # img
+        full_response = re.sub(r"<img.*?>", "", full_response, flags=re.DOTALL)
+        # 剔除注释
+        full_response = re.sub(r"<!--.*?-->", "", full_response, flags=re.DOTALL)
+        # 剔除空格
+        full_response = re.sub(r"\s+", " ", full_response)
+        # 剔除空标签
+        full_response = re.sub(r"<([a-zA-Z]+)[^>]*>[\s\n\r\t]*</\1>", "", full_response, flags=re.DOTALL)
+       
+      
         return full_response
 
     def get_res_by_xpath(self, xpath, content, res_url):
@@ -284,11 +303,16 @@ class WoCloudAI:
 
     def run_test(self, content,res_url):
 
+        with open("test.html", "w", encoding="utf-8") as f:
+            f.write(content)
+
         # 获得prompt
         prompt = self.get_prompt(content)
 
         # 查询AI模型,提取XPath表达式
         xpath_response = self.query(input_text=prompt)
+
+        print("XPath response:", xpath_response)
 
         if xpath_response is None:
             print("Failed to get XPath response.")
@@ -362,7 +386,7 @@ if __name__ == "__main__":
     ai = WoCloudAI()
 
     # Example URL
-    url = "http://www.xztu.edu.cn/index/tzgg.htm"
+    url = "https://zcc.fjbu.edu.cn/zbcg.htm"
 
     ai.run(url)
 
@@ -371,15 +395,21 @@ if __name__ == "__main__":
 
 
 
-prompt = """
-        提取招标公告列表的XPath表达式，仅返回一个准确的XPath表达式，无需其他内容。
 
-        目标元素特征：
-        - 通常在列表结构中(如ul,tr,div,a等)
-        - 返回的必须是完整的列表项元素本身，而非其中的链接元素
-        - 必须以//开头，使用特定的属性直接定位
+
+
+
+
+# 大部分可以成功
+# prompt = """
+#         提取招标公告列表的XPath表达式，仅返回一个准确的XPath表达式，无需其他内容。
+
+#         目标元素特征：
+#         - 通常在列表结构中(如ul,tr,div,a等)
+#         - 返回的必须是完整的列表项元素本身，而非其中的链接元素
+#         - 必须以//开头，使用特定的属性直接定位
        
         
-        分析此HTML并返回最简洁有效的XPath，确保表达式停止在列表项级别而不深入到子元素:
-        {text}
-        """
+#         分析此HTML并返回最简洁有效的XPath，确保表达式停止在列表项级别而不深入到子元素:
+#         {text}
+#         """
