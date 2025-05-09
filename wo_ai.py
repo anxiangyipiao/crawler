@@ -297,8 +297,12 @@ class WoCloudAI:
         # 使用XPath提取数据
         items = self.get_res_by_xpath(xpath_response, content, res_url)
 
+        if not items:
+            print("No items found with the provided XPath.")
+            return False,xpath_response
+
         # 打印提取的信息，而不是原始HTML
-        for i, item in enumerate(items[:3]):  # 只打印前3项作为示例
+        for i, item in enumerate(items[:1]):  # 只打印前3项作为示例
             print(f"\n--- 项目 {i+1} ---")
             for key, value in item.items():
                     print(f"{key}: {value}")
@@ -313,7 +317,6 @@ class WoCloudAI:
 
         return False,xpath_response
            
-
     def run_mobile(self,url):
 
         # 获得prompt
@@ -331,7 +334,6 @@ class WoCloudAI:
         judge,xpath_response = self.run_test(content,res_url)
 
         return judge,xpath_response
-
 
     def run(self, url):
 
@@ -360,7 +362,7 @@ if __name__ == "__main__":
     ai = WoCloudAI()
 
     # Example URL
-    url = "http://sdxxwsxh.org.cn/list-tzgg.html"
+    url = "https://www.sma.edu.cn/col/col12072/index.html"
 
     ai.run(url)
 
