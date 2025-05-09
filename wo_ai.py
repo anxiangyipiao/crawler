@@ -608,5 +608,3 @@ if __name__ == "__main__":
     url = "https://www.cuhf.edu.cn/180/list.htm"
 
     ai = WoCloudAI()
-    xpath_response, flag = ai.run(url)
-    
