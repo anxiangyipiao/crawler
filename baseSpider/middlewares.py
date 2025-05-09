@@ -124,7 +124,7 @@ class BaseHeaderMiddleware:
 
         if request.headers.get('User-Agent') is None or "Scrapy" in request.headers.get('User-Agent').decode():
             # 检查是否需要使用移动端 User-Agent
-            if self.should_use_mobile_ua(request, spider):
+            if getattr(spider, 'use_mobile_ua', False): 
                 ua = UserAgent(platforms='mobile')
                 request.headers['User-Agent'] = ua.random # 移动端UA
             else:
@@ -133,13 +133,7 @@ class BaseHeaderMiddleware:
    
         return None
 
-    def should_use_mobile_ua(self, request, spider):
-        # 在这里添加你的判断逻辑
-        # 例如，可以根据 URL 或 Spider 名称来判断
-        # 下面是一个示例，如果 URL 包含 "mobile"，则使用移动端 UA
-        
-        if spider.get('use_mobile_ua', False) == True:
-            return True
+   
     
 
 
