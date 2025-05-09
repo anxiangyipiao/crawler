@@ -66,6 +66,8 @@ class BaseSpiderObject(scrapy.Spider,metaclass=SpiderMeta):
     timeRange = 7 # 爬虫时间范围，单位为天,0为当天，1为前一天，2为前两天，3为前三天，4为前四天，5为前五天，6为前六天，7为前七天
     crawl_today = datetime.now() # 爬虫开始时间
     last_publish_time = None # 最新发布时间
+    use_mobile_ua = False # 是否使用手机UA
+    
 
     insertCount = 0 # 总任务数量
     successCount = 0 # 成功数量
