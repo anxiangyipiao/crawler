@@ -292,8 +292,9 @@ class WoCloudAI:
             - 确保XPath以//开头，便于在任何位置查找
             - 使用最简洁但有效的选择器（避免过长或过于复杂的表达式）
             - 验证XPath能否准确定位到列表项级别
+            - 标签都是小写
             
-            示例输出格式：//div[@class='news-list']//ul//li
+            示例输出格式：//div[@class='news-list']//ul//li 
             
             分析此HTML并仅返回一个最准确的XPath表达式，无需解释：
             {text}
@@ -345,7 +346,7 @@ class WoCloudAI:
             title_element (list): 标题元素列表
             
         Returns:
-            tuple: (标题, URL)或(None, None)如果发生错误
+            tuple: (标题, URL)或(None, None) 如果发生错误
         """
         if title_element is None or len(title_element) == 0:
             return None, None
@@ -382,6 +383,39 @@ class WoCloudAI:
             logger.error(f"提取标题和URL时发生错误: {str(e)}")
             return None, None
 
+    def extract_date_info(self, element):
+
+       # 尝试提取日期
+        date_text = element.xpath("string(.)").strip()
+        date_match = DATE_PATTERN.search(date_text)
+            
+        if date_match:
+            raw_date = date_match.group(0)
+                # 标准化日期格式为yyyy-MM-dd
+            clean_date = raw_date.replace("年", "-").replace("月", "-").replace("日", "").replace("/", "-").replace(".", "-")
+                # 处理可能的多余空格和时间部分
+            clean_date = re.sub(r'\s+.*$', '', clean_date)  # 移除时间部分
+
+            return clean_date
+
+    def extract_a_label_info(self, element):
+        '''
+        提取a标签的标题和URL信息。
+        '''
+
+        url = element.get("href",None)
+
+        if element.get("title",None):
+            title = element.get("title")
+        else:
+            title = element.xpath("string(.)").strip()
+
+
+        # re 去掉多余空格
+        title = re.sub(r'\s+', ' ', title).strip()
+
+        return title, url
+
     def extract_item_info(self, element, res_url):
         """
         从列表项元素中提取信息。
@@ -393,38 +427,30 @@ class WoCloudAI:
         Returns:
             dict: 包含提取信息的字典或None如果发生错误
         """
-        if element is None or res_url is None:
-            return None
             
         try:
             # 创建一个字典来存储提取的信息
             item = {}
-            
-            # 尝试提取标题 - 通常在a标签内
-            title_url_element = element.xpath(".//a")
-            
-            if title_url_element:
-                item["title"], item["url"] = self.extract_title_url_info(title_url_element)
+
+            # 如果本身就是a标签，直接提取
+            if element.tag == "a":
+                
+                item["title"], item["url"] = self.extract_a_label_info(element)
                 if item["url"]:
-                    item["url"] = urljoin(res_url, item["url"])  # 处理相对链接
-                else:
-                    item["url"] = None
+                    item["url"] = urljoin(res_url, item["url"])
+
             else:
-                item["title"] = None
-                item["url"] = None
-            
-            # 尝试提取日期
-            date_text = element.xpath("string(.)").strip()
-            date_match = DATE_PATTERN.search(date_text)
-            
-            if date_match:
-                raw_date = date_match.group(0)
-                # 标准化日期格式为yyyy-MM-dd
-                clean_date = raw_date.replace("年", "-").replace("月", "-").replace("日", "").replace("/", "-").replace(".", "-")
-                # 处理可能的多余空格和时间部分
-                clean_date = re.sub(r'\s+.*$', '', clean_date)  # 移除时间部分
-                item["date"] = clean_date
-            else:
+              
+                # 尝试提取标题 - 通常在a标签内
+                title_url_element = element.xpath(".//a")
+                
+                if title_url_element:
+                    item["title"], item["url"] = self.extract_title_url_info(title_url_element)
+                    if item["url"]:
+                        item["url"] = urljoin(res_url, item["url"])  # 处理相对链接
+                   
+            item["date"] = self.extract_date_info(element)
+            if not item["date"]:
                 item["date"] = None
             
             return item
@@ -579,7 +605,7 @@ class WoCloudAI:
 
 if __name__ == "__main__":
     # Example URL
-    url = "https://www.succ.edu.cn/Home/Type/type/lmid/2b1e699d6c8a5dc1a6ce62a97baf362b"
+    url = "https://www.cuhf.edu.cn/180/list.htm"
 
     ai = WoCloudAI()
     xpath_response, flag = ai.run(url)

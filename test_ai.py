@@ -383,7 +383,7 @@ if __name__ == "__main__":
   
 
     # Example URL
-    url = "https://www.succ.edu.cn/Home/Type/type/lmid/2b1e699d6c8a5dc1a6ce62a97baf362b"
+    url = "https://www.gzmu.edu.cn/xwzx/tzgg.htm"
 
     ai = WoCloudAI()
     xpath_response,flag = ai.run(url)
