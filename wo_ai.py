@@ -91,7 +91,6 @@ class WoCloudAI:
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
 
-
     def get_prompt(self, contents):
 
         prompt = """
@@ -303,8 +302,8 @@ class WoCloudAI:
 
     def run_test(self, content,res_url):
 
-        with open("test.html", "w", encoding="utf-8") as f:
-            f.write(content)
+        # with open("test.html", "w", encoding="utf-8") as f:
+        #     f.write(content)
 
         # 获得prompt
         prompt = self.get_prompt(content)
@@ -386,30 +385,8 @@ if __name__ == "__main__":
     ai = WoCloudAI()
 
     # Example URL
-    url = "https://zcc.fjbu.edu.cn/zbcg.htm"
+    url = "https://zcglc.zua.edu.cn/zbxx.htm"
 
     ai.run(url)
 
 
-
-
-
-
-
-
-
-
-
-# 大部分可以成功
-# prompt = """
-#         提取招标公告列表的XPath表达式，仅返回一个准确的XPath表达式，无需其他内容。
-
-#         目标元素特征：
-#         - 通常在列表结构中(如ul,tr,div,a等)
-#         - 返回的必须是完整的列表项元素本身，而非其中的链接元素
-#         - 必须以//开头，使用特定的属性直接定位
-       
-        
-#         分析此HTML并返回最简洁有效的XPath，确保表达式停止在列表项级别而不深入到子元素:
-#         {text}
-#         """
