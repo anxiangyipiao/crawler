@@ -615,11 +615,11 @@ class WoCloudAI:
                 template_content = template_file.read()
 
             # 替换模板中的占位符
-            spider_content = template_content.replace("{{url}}", url)
-            spider_content = spider_content.replace("{{site_name}}", site_name)
-            spider_content = spider_content.replace("{{list_xpath}}", list_xpath)
-            spider_content = spider_content.replace("{{user_agent}}", user_agent)
-            spider_content = spider_content.replace("{{name}}", output_title)
+            spider_content = template_content.replace("{url}", url)
+            spider_content = spider_content.replace("{site_name}", site_name)
+            spider_content = spider_content.replace("{list_xpath}", list_xpath)
+            spider_content = spider_content.replace("{user_agent}", user_agent)
+            spider_content = spider_content.replace("{name}", output_title)
 
 
             path = os.path.dirname(os.path.abspath(__file__))
