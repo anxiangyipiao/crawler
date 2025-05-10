@@ -1,9 +1,9 @@
 import datetime
 import json
+import random
 import re
 import time
 import scrapy
-from urllib.parse import urlencode
 # -------------------------------tag-------------------------------------------
 # 这里需要在python安装目录\Lib\site-packages下创建 .pth文件，内容为sp_control.py的路径
 from sp_action.sp_control import ZhaotoubiaoBaseSpider
@@ -11,30 +11,29 @@ from sp_action.items import SpiderItem
 from lxml import etree
 import urllib
 
-# 建设工程
-class temp_zhaobiao(ZhaotoubiaoBaseSpider):
+
+class template_zhaobiao(ZhaotoubiaoBaseSpider):
     # ggzy: 公共资源网     zfcg：政府采购
-    name = "{name}_edu_zhaobiao"
+    name = "{name}"
     start_urls = [
-        'https://www.gdqy.edu.cn/cggg.htm',
+       "{url}",  # 招标信息列表页
     ]
     
-    next_base_urls = 'http://xbjgjc.cn/portal/list?chnlcode=tender&pageIndex={page1}&pagestr={page2}&pageSize=20'  # 用于下一页网址拼接
-    contents_base_urls = 'http://www.ahkm.cn'  # 用于拼接详情页网址
+    next_base_urls = ''  # 用于下一页网址拼接
+    contents_base_urls = ''  # 用于拼接详情页网址
     page_urls = ""  # 用于获取下一页网址
 
     province = ""  # 必填，爬虫省份
     city = ""  # 必填，爬虫城市
     county = ""  # 选填，爬虫区/县
-    site_name = '广东轻工职业技术大学'
+    site_name = "{site_name}"  # 必填，爬虫网站名称
     source = start_urls[0].split('/')[2]
     max_page = 1
 
     headers = {
-         'User-Agent':  "Mozilla/5.0 (Linux; Android 8; Vivo X21 Build/O11019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.91 Mobile Safari/537.36",
+         'User-Agent':  "{user_agent}",
     }
-
-   
+ 
     def start_requests(self):
 
         for url in self.start_urls:
@@ -45,14 +44,13 @@ class temp_zhaobiao(ZhaotoubiaoBaseSpider):
         
         page = response.meta['page']
 
-        node_list  = response.xpath("{xpath}")
+        node_list  = response.xpath("{list_xpath}")
  
         for node in node_list:
 
             # 如果a标签不node存在，则跳过
             if not node.xpath(".//a"):
                 continue
-
             item = SpiderItem()
             item['source'] = self.source
             item['site_name'] = self.site_name
@@ -67,14 +65,14 @@ class temp_zhaobiao(ZhaotoubiaoBaseSpider):
             item['title'] = temp_item['title']
             item['publish_time'] = temp_item['date']
             item['url'] = temp_item['url']
-
-          
             # -------------------------------tag-------------------------------------------
             add_task = self.add_download_task(item['url'],item['publish_time'])
             # 招标内容
             if add_task == False:
-
-                yield scrapy.Request(item['url'], callback=self.parse_detail, meta={'item': item})
+                time.sleep(random.randint(1, 3))
+                yield scrapy.Request(item['url'], callback=self.parse_detail,
+                                      meta={'item': item},headers=self.headers
+                                      )
         # -------------------------------tag-------------------------------------------
         # 检查当页数据日期，判断是否翻页
         if node_list != None and len(node_list) > 0:
@@ -83,10 +81,7 @@ class temp_zhaobiao(ZhaotoubiaoBaseSpider):
         # -------------------------------tag-------------------------------------------
         # if self.pagecount < int(self.max_page) and check_publish_time:
         if page < int(self.max_page) and check_publish_time:
-            time.sleep(1)
-            page += 1
-            urls = self.next_base_urls.format(page1=page,page2=page)
-            yield scrapy.Request(urls,method='get',callback=self.parse,dont_filter=True,meta={'page':page},headers=self.headers)
+           pass
         else:
             # -------------------------------tag-------------------------------------------
             # 标记翻页结束
@@ -97,9 +92,7 @@ class temp_zhaobiao(ZhaotoubiaoBaseSpider):
         item = response.meta['item']
         item['contents'] = response.text
         yield item
-
-    
-    
+  
     def extract_item_info(self, node, res_url):
         """从列表项元素中提取标题、日期和链接等信息"""
 
@@ -132,8 +125,6 @@ class temp_zhaobiao(ZhaotoubiaoBaseSpider):
 
         
         return item
-
-
 
     def extract_title_url_info(self, title_element):
 

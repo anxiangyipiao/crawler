@@ -602,27 +602,90 @@ class WoCloudAI:
             logger.error(f"运行测试流程时发生错误: {str(e)}")
             return None, None
 
-    def save_xpath_to_file(self, xpath_response, file_path):
+    def generate_spider_file(self,template_path, output_title, url, site_name, list_xpath, user_agent):
         """
-        将提取的 XPath 表达式保存到指定文件中。
+        根据模板生成新的爬虫文件。
 
         Args:
-            xpath_response (str): 提取的 XPath 表达式。
-            file_path (str): 要保存的文件路径。
+            
         """
         try:
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(f"xpath = '{xpath_response}'\n")
-            logger.info(f"XPath 表达式已保存到文件: {file_path}")
+            # 读取模板内容
+            with open(template_path, 'r', encoding='utf-8') as template_file:
+                template_content = template_file.read()
+
+            # 替换模板中的占位符
+            spider_content = template_content.replace("{{url}}", url)
+            spider_content = spider_content.replace("{{site_name}}", site_name)
+            spider_content = spider_content.replace("{{list_xpath}}", list_xpath)
+            spider_content = spider_content.replace("{{user_agent}}", user_agent)
+            spider_content = spider_content.replace("{{name}}", output_title)
+
+
+            path = os.path.dirname(os.path.abspath(__file__))
+            output_path = os.path.join(path,'output',f"{output_title}.py")
+
+            # 写入新的爬虫文件
+            with open(output_path, 'w', encoding='utf-8') as output_file:
+                output_file.write(spider_content)
+
+            print(f"成功生成爬虫文件: {output_path}")
         except Exception as e:
-            logger.error(f"保存 XPath 表达式到文件时发生错误: {str(e)}")
+            print(f"生成爬虫文件时发生错误: {e}")
+
+    def generate_path(self,url):
+        """
+        生成爬虫文件的路径。
+
+        Args:
+            url (str): 要生成爬虫文件的URL。
+
+        Returns:
+            str: 生成的爬虫文件路径。
+        """
+
+        path = os.path.dirname(os.path.abspath(__file__))
+
+        template_path = os.path.join(path, "template.py")
+
+        # "https://www.cuhf.edu.cn/180/list.htm"
+        domain = urllib.parse.urlparse(url).netloc.replace(".", "_").replace("www_", "")
+
+        output_title = '{domain}_zhaobiao'.format(domain=domain)
+        
+
+        return template_path, output_title
 
 
 
 if __name__ == "__main__":
+
+
+
     # Example URL
     url = "https://www.cuhf.edu.cn/180/list.htm"
+    site_name = 'aaa'
 
     ai = WoCloudAI()
 
-    xpath_response, flag = ai.run(url)
+    template_path, output_title = ai.generate_path(url)
+
+    list_xpath, flag = ai.run(url)
+
+    if list_xpath:
+
+        if flag == 0:
+       
+            ua = 'Mozilla/5.0 (Linux; Android 14; Xiaomi 13 Build/UP1A.230905.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/115.0.5790.170 Mobile Safari/537.36'
+
+            ai.generate_spider_file(template_path, output_title ,url,site_name, list_xpath, ua)
+
+
+        elif flag == 1:
+            
+            ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+
+            ai.generate_spider_file(template_path, output_title ,url,site_name, list_xpath, ua)
+    
+        
+        
