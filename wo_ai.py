@@ -602,6 +602,22 @@ class WoCloudAI:
             logger.error(f"运行测试流程时发生错误: {str(e)}")
             return None, None
 
+    def save_xpath_to_file(self, xpath_response, file_path):
+        """
+        将提取的 XPath 表达式保存到指定文件中。
+
+        Args:
+            xpath_response (str): 提取的 XPath 表达式。
+            file_path (str): 要保存的文件路径。
+        """
+        try:
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(f"xpath = '{xpath_response}'\n")
+            logger.info(f"XPath 表达式已保存到文件: {file_path}")
+        except Exception as e:
+            logger.error(f"保存 XPath 表达式到文件时发生错误: {str(e)}")
+
+
 
 if __name__ == "__main__":
     # Example URL

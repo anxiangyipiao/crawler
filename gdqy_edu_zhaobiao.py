@@ -12,9 +12,9 @@ from lxml import etree
 import urllib
 
 # 建设工程
-class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(ZhaotoubiaoBaseSpider):
+class temp_zhaobiao(ZhaotoubiaoBaseSpider):
     # ggzy: 公共资源网     zfcg：政府采购
-    name = "gdqys_edu_zhaobiao"
+    name = "{name}_edu_zhaobiao"
     start_urls = [
         'https://www.gdqy.edu.cn/cggg.htm',
     ]
@@ -45,7 +45,7 @@ class Shandong_JiNan_ggzy_jianshegongcheng_zhaobiao(ZhaotoubiaoBaseSpider):
         
         page = response.meta['page']
 
-        node_list  = response.xpath("//div[@class='content-left']/ul/li")
+        node_list  = response.xpath("{xpath}")
  
         for node in node_list:
 
