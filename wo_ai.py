@@ -666,8 +666,8 @@ if __name__ == "__main__":
 
 
     # Example URL
-    url = "https://www.zzyedu.cn/14/list.htm"
-    site_name = '郑州职业技术学院'
+    url = "https://www.nyvc.edu.cn/type/01011206.html"
+    site_name = '南阳职业学院'
 
     ai = WoCloudAI()
 
