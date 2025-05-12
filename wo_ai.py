@@ -25,7 +25,7 @@ COMMENT_PATTERN = re.compile(r"<!--.*?-->", re.DOTALL)
 WHITESPACE_PATTERN = re.compile(r"\s+")
 EMPTY_TAG_PATTERN = re.compile(r"<([a-zA-Z]+)[^>]*>[\s\n\r\t]*</\1>", re.DOTALL)
 CHARSET_PATTERN = re.compile(r'charset=(\S+)')
-DATE_PATTERN = re.compile(r"\d{4}[-/.年]\d{2}[-/.月]\d{2}[日]?")
+DATE_PATTERN = re.compile(r"\d{4}[-/.年]\d{2}[-/.月]\d{2}")
 
 # 从环境变量获取令牌或使用默认值
 X_YP_ACCESS_TOKEN = "a36a90f6-d119-4b50-970f-30894a2f39fa"
@@ -666,8 +666,8 @@ if __name__ == "__main__":
 
 
     # Example URL
-    url = "https://www.jssc.edu.cn/zczx/cgggwhw/list.htm"
-    site_name = '江苏航运职业技术学院'
+    url = "https://www.zzyedu.cn/14/list.htm"
+    site_name = '郑州职业技术学院'
 
     ai = WoCloudAI()
 
