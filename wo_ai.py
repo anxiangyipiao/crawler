@@ -31,6 +31,8 @@ DATE_PATTERN = re.compile(r"\d{4}[-/.年]\d{2}[-/.月]\d{2}")
 X_YP_ACCESS_TOKEN = "a36a90f6-d119-4b50-970f-30894a2f39fa"
 
 
+
+
 class WoCloudAI:
     """沃云AI助手类，用于分析网页和提取招标公告列表。"""
 
@@ -662,33 +664,64 @@ class WoCloudAI:
 
 
 
+
+
+
+
+
+def process_single_site(ai, site_name, site_url):
+        """
+        针对单个站点执行流程
+        """
+        template_path, output_title = ai.generate_path(site_url)
+        list_xpath, flag = ai.run(site_url)
+
+        if list_xpath:
+            if flag == 0:
+                ua = 'Mozilla/5.0 (Linux; Android 14; Xiaomi 13 Build/UP1A.230905.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/115.0.5790.170 Mobile Safari/537.36'
+                ai.generate_spider_file(template_path, output_title, site_url, site_name, list_xpath, ua)
+            elif flag == 1:
+                ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+                ai.generate_spider_file(template_path, output_title, site_url, site_name, list_xpath, ua)
+
+
+def process_all_sites(ai):
+        """
+        循环遍历 website 字典里的每个站点，调用 process_single_site
+        """
+        for site_name, site_url in website.items():
+            process_single_site(ai, site_name, site_url)
+
+
+
+
+website = {
+        "大连外国语大学": "https://www.dlufl.edu.cn",
+        "宁波工程学院": "https://www.nbut.edu.cn",
+        "北京经贸职业学院": "https://www.csuedu.com",
+        "衡水中学实验学校": "http://www.hszxsyxx.com",
+        "浙江师范大学": "https://www.zjnu.edu.cn",
+        "浙江树人学院": "https://www.zjsru.edu.cn",
+        "盐城工学院": "https://www.ycit.cn",
+        "河北轨道运输职业技术学院|石家庄铁路运输": "https://www.hbgdys.cn",
+        "宿迁学院": "https://www.squ.edu.cn",
+        "武汉职业技术学院": "https://www.wtc.edu.cn",
+        "攀枝花学院官网": "https://www.pzhu.edu.cn",
+        "保定学院": "https://www.bdu.edu.cn",
+        "重庆师范大学": "https://www.cqnu.edu.cn"
+    }
+
+
 if __name__ == "__main__":
 
 
-    # Example URL
-    url = "https://www.nyvc.edu.cn/type/01011206.html"
-    site_name = '南阳职业学院'
-
     ai = WoCloudAI()
 
-    template_path, output_title = ai.generate_path(url)
+    # 示例：处理所有网站
+    # process_all_sites(ai)
 
-    list_xpath, flag = ai.run(url)
-
-    if list_xpath:
-
-        if flag == 0:
-       
-            ua = 'Mozilla/5.0 (Linux; Android 14; Xiaomi 13 Build/UP1A.230905.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/115.0.5790.170 Mobile Safari/537.36'
-
-            ai.generate_spider_file(template_path, output_title ,url,site_name, list_xpath, ua)
-
-
-        elif flag == 1:
-            
-            ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
-
-            ai.generate_spider_file(template_path, output_title ,url,site_name, list_xpath, ua)
+    # 若只想测试单个站点，可调用如下函数
+    process_single_site(ai, '陕西机电职业技术学院', 'https://zichan.sxjdzy.cn/cgxx.htm')
     
         
         
