@@ -355,12 +355,14 @@ class WoCloudAI:
             if len(title_element) == 1:
                 title_attr = title_element[0].get("title")
                 url = title_element[0].get("href")
-                
+
                 if title_attr and title_attr.strip():
+
                     return title_attr.strip(), url
+                
                 else:
-                    # 如果没有title属性或title为空，则使用元素文本内容
-                    return title_element[0].xpath("string(.)").strip(), url
+                    # 如果没有title属性或title为空，则使用元素文本内
+                    return title_element[0].xpath("string(.)"), url
                 
             if len(title_element) > 1:
                 # 如果有多个元素，返回最长元素的文本内容及其URL
@@ -410,10 +412,6 @@ class WoCloudAI:
         else:
             title = element.xpath("string(.)").strip()
 
-
-        # re 去掉多余空格
-        title = re.sub(r'\s+', ' ', title).strip()
-
         return title, url
 
     def extract_item_info(self, element, res_url):
@@ -448,7 +446,15 @@ class WoCloudAI:
                     item["title"], item["url"] = self.extract_title_url_info(title_url_element)
                     if item["url"]:
                         item["url"] = urljoin(res_url, item["url"])  # 处理相对链接
-                   
+
+
+            if item.get("title") and item.get("url"):
+                item["title"] = re.sub(r'\s+', ' ', item["title"]).strip()
+                decoded_url = urllib.parse.unquote(item.get("url"))
+                url = re.sub(r'\s+', '', decoded_url)
+                item["url"] = url
+
+
             item["date"] = self.extract_date_info(element)
             if not item["date"]:
                 item["date"] = None
@@ -648,12 +654,10 @@ class WoCloudAI:
 
         template_path = os.path.join(path, "template.py")
 
-        # "https://www.cuhf.edu.cn/180/list.htm"
         domain = urllib.parse.urlparse(url).netloc.replace(".", "_").replace("www_", "")
 
         output_title = '{domain}_zhaobiao'.format(domain=domain)
         
-
         return template_path, output_title
 
 
@@ -661,10 +665,9 @@ class WoCloudAI:
 if __name__ == "__main__":
 
 
-
     # Example URL
-    url = "https://www.cuhf.edu.cn/180/list.htm"
-    site_name = 'aaa'
+    url = "http://www.sypt.cn/news/more.aspx?id=2"
+    site_name = '松原职业技术学院'
 
     ai = WoCloudAI()
 

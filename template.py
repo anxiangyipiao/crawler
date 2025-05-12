@@ -3,6 +3,7 @@ import json
 import random
 import re
 import time
+from urllib.parse import urljoin
 import scrapy
 # -------------------------------tag-------------------------------------------
 # 这里需要在python安装目录\Lib\site-packages下创建 .pth文件，内容为sp_control.py的路径
@@ -51,6 +52,7 @@ class template_zhaobiao(ZhaotoubiaoBaseSpider):
             # 如果a标签不node存在，则跳过
             if not node.xpath(".//a"):
                 continue
+            
             item = SpiderItem()
             item['source'] = self.source
             item['site_name'] = self.site_name
@@ -93,74 +95,138 @@ class template_zhaobiao(ZhaotoubiaoBaseSpider):
         item['contents'] = response.text
         yield item
   
-    def extract_item_info(self, node, res_url):
-        """从列表项元素中提取标题、日期和链接等信息"""
+    def extract_title_url_info(self, title_element):
+        """
+        从标题元素中提取标题和URL。
+        
+        Args:
+            title_element (list): 标题元素列表
+            
+        Returns:
+            tuple: (标题, URL)或(None, None) 如果发生错误
+        """
+        if title_element is None or len(title_element) == 0:
+            return None, None
+        
+        try:
+            if len(title_element) == 1:
+                title_attr = title_element[0].get("title")
+                url = title_element[0].get("href")
 
+                if title_attr and title_attr.strip():
+
+                    return title_attr.strip(), url
+                
+                else:
+                    # 如果没有title属性或title为空，则使用元素文本内容
+
+                    return title_element[0].xpath("string(.)"), url
+                
+            if len(title_element) > 1:
+                # 如果有多个元素，返回最长元素的文本内容及其URL
+                longest_text = ""
+                longest_url = ""
+                for element in title_element:
+                    if element.get("title") and element.get("title").strip():
+                        text = element.get("title").strip()
+                    else:
+                        text = element.xpath("string(.)").strip()
+                    
+                    # 当找到更长的文本时，同时保存其URL
+                    if len(text) > len(longest_text):
+                        longest_text = text
+                        longest_url = element.get("href")
+          
+                return longest_text, longest_url
+                
+        except Exception as e:
+          
+            return None, None
+
+    def extract_date_info(self, element):
+
+        DATE_PATTERN = re.compile(r"\d{4}[-/.年]\d{2}[-/.月]\d{2}[日]?")
+
+       # 尝试提取日期
+        date_text = element.xpath("string(.)").strip()
+        date_match = DATE_PATTERN.search(date_text)
+            
+        if date_match:
+            raw_date = date_match.group(0)
+                # 标准化日期格式为yyyy-MM-dd
+            clean_date = raw_date.replace("年", "-").replace("月", "-").replace("日", "").replace("/", "-").replace(".", "-")
+                # 处理可能的多余空格和时间部分
+            clean_date = re.sub(r'\s+.*$', '', clean_date)  # 移除时间部分
+
+            return clean_date
+
+    def extract_a_label_info(self, element):
+        '''
+        提取a标签的标题和URL信息。
+        '''
+
+        url = element.get("href",None)
+
+        if element.get("title",None):
+            title = element.get("title")
+        else:
+            title = element.xpath("string(.)").strip()
+
+        return title, url
+
+    def extract_item_info(self, element, res_url):
+        """
+        从列表项元素中提取信息。
+        
+        Args:
+            element: HTML元素
+            res_url (str): 响应URL
+            
+        Returns:
+            dict: 包含提取信息的字典或None如果发生错误
+        """
+            
         from lxml import etree
 
         # 使用XPath解析HTML元素
-        element = etree.HTML(node.extract())
+        element = etree.HTML(element.extract())
 
 
-        # 创建一个字典来存储提取的信息
-        item = {}
-        
-        # 尝试提取标题 - 通常在a标签内
-        title_url_element = element.xpath(".//a")
-        
-        if title_url_element:
-           
-            item["title"],item["url"] = self.extract_title_url_info(title_url_element)
-            item["url"] = urllib.parse.urljoin(res_url, item["url"])  # 处理相对链接
-        
-        
-        # 尝试提取日期 2021-05-11 使用regex匹配
-        date_element = element.xpath(".//text()")
-        date_text = "".join(date_element).strip()
-        date_match = re.search(r"\d{4}[-/.年]\d{2}[-/.月]\d{2}", date_text)
-        if date_match:
-            item["date"] = date_match.group(0).replace("年", "-").replace("月", "-").replace("日", "").replace("/", "-").replace(".", "-")
-        else:
-            item["date"] = None
+        try:
+            # 创建一个字典来存储提取的信息
+            item = {}
 
-        
-        return item
+            # 如果本身就是a标签，直接提取
+            if element.tag == "a":
+                
+                item["title"], item["url"] = self.extract_a_label_info(element)
+                if item["url"]:
+                    item["url"] = urljoin(res_url, item["url"])
 
-    def extract_title_url_info(self, title_element):
-
-        if title_element is None:
-            return None
-        
-        if len(title_element) == 1:
-
-            title_attr = title_element[0].get("title")
-            if title_attr and title_attr.strip():
-
-                title = re.sub(r'\s+', '', title_attr.strip())
-
-                return title,title_element[0].get("href")
             else:
-                # 如果没有title属性或title为空，则使用元素文本内容
-                title = re.sub(r'\s+', '', title_element[0].xpath("string(.)").strip())
-                return title,title_element[0].get("href")
+              
+                # 尝试提取标题 - 通常在a标签内
+                title_url_element = element.xpath(".//a")
                 
-            
-        if len(title_element) > 1:
-            # 如果有多个元素，返回最长元素的文本内容及其URL
-            longest_text = ""
-            longest_url = ""
-            for element in title_element:
-                if element.get("title") and element.get("title").strip():
-                    text = element.get("title").strip()
-                else:
-                    text = element.xpath("string(.)").strip()
-                
-                # 当找到更长的文本时，同时保存其URL
-                if len(text) > len(longest_text):
-                    longest_text = text
-                    longest_url = element.get("href")  # 获取当前最长文本对应的URL
-            
-            # re 去掉空格
-            longest_text = re.sub(r'\s+', '', longest_text)
+                if title_url_element:
+                    item["title"], item["url"] = self.extract_title_url_info(title_url_element)
+                    if item["url"]:
+                        item["url"] = urljoin(res_url, item["url"])  # 处理相对链接
 
-            return longest_text, longest_url  # 返回最长文本和对应的URL
+            # 去掉多余的空格
+            if item.get("title") and item.get("url"):
+                item["title"] = re.sub(r'\s+', ' ', item["title"]).strip()
+                decoded_url = urllib.parse.unquote(item.get("url"))
+                url = re.sub(r'\s+', '', decoded_url)
+                item["url"] = url
+            
+        
+            item["date"] = self.extract_date_info(element)
+            if not item["date"]:
+                item["date"] = None
+            
+            return item
+            
+        except Exception as e:
+         
+            return None
