@@ -422,9 +422,9 @@ def validate_xpath(html_content, list_xpath):
 # 主要代码
 if __name__ == "__main__":
     
-    target_url = "http://dlu.edu.cn/xwfb/xxgg.htm"  # 替换为目标URL
+    target_url = " https://www.hebuee.edu.cn/tzgg1.htm"  # 替换为目标URL
     
-    html_content = fetch_content(target_url,ua = Window_UA)
+    html_content = fetch_content(target_url)
 
     clean_content = clean_html(html_content)
 
