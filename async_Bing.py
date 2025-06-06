@@ -14,7 +14,8 @@ class BingSearcher:
     def __init__(self, query):
         self.query = query
         self.encoded_search_query = quote(query)
-        self.search_url = f'https://cn.bing.com/search?q={self.encoded_search_query}'
+        self.search_url = f'https://cn.bing.com/search?&ensearch=1&FORM=BESBTB&q={self.encoded_search_query}'
+  
         self.result_url = None
 
     async def perform_search(self):
@@ -26,17 +27,17 @@ class BingSearcher:
             try:
                
                 await page.goto(self.search_url)
-                await page.wait_for_selector("li.b_algo h2 a", timeout=10000)
+                await page.wait_for_selector("li.b_algo h2 a", timeout=30000)
 
                 results = await page.query_selector_all("li.b_algo h2 a")
 
                 found = False
-                for i in range(min(3, len(results))):
+                for i in range(min(5, len(results))):
                     link = results[i]
                     result_url = await link.get_attribute("href")
                     print(f"⏳ 尝试第 {i + 1} 个结果: {result_url}")
 
-                    if ".gov.cn" in result_url:
+                    if ".gov.cn" in result_url and 'zwfw' not in result_url and 'dzsw' not in result_url.lower():
                         self.result_url = self.get_base_url(result_url)
                         print(f"✅ 找到政府网站: {self.result_url}")
                         found = True
@@ -75,7 +76,11 @@ async def process_row(name, semaphore, csv_file):
             return
 
         print(f"🔄 开始处理: {name}")
-        query = f"{name}政府官网"
+        try:
+            searchname = name.split('市')[1]  # 去掉市前缀，避免重复
+        except IndexError:
+            searchname = name
+        query = f"{searchname}人民政府官网"
         searcher = BingSearcher(query)
         await searcher.perform_search()
         found_url = searcher.get_result_url()
@@ -99,7 +104,7 @@ async def main():
         df_global['url'] = ''
 
     # 设置最大并发数量（推荐 5~10）
-    semaphore = asyncio.Semaphore(1)
+    semaphore = asyncio.Semaphore(3)
 
     tasks = []
     for _, row in df_global.iterrows():
@@ -112,11 +117,10 @@ async def main():
     print("✅ 所有数据已处理完毕并保存。")
 
 
-
 def filter_urls(path):
 
     """
-    过滤掉重复的 URL，将重复的 URL 设置为 None
+    过滤掉重复的 URL，只保留第一个出现的 URL，其他 URL 替换为 None
     """
 
     df = pd.read_csv(path, encoding='utf-8-sig')
@@ -125,8 +129,15 @@ def filter_urls(path):
     # print(f"检测到重复的 URL: {duplicate_urls.tolist()}")
 
     # 将重复的 URL 设置为 None
-    df.loc[df['url'].isin(duplicate_urls), 'url'] = None
-    
+    df.loc[df['url'].duplicated(keep='first'), 'url'] = None
+
+
+
+    # 将  URL 包含zwfw 替换为 None
+    df.loc[df['url'].str.contains('zwfw', na=False), 'url'] = None
+
+
+
     # 保存修改后的 DataFrame
     df.to_csv(path, index=False, encoding='utf-8-sig')
 
@@ -143,6 +154,7 @@ def count(path):
 
 
 if __name__ == "__main__":
+    
     # asyncio.run(main())
 
     # filter_urls(CSV_FILE)

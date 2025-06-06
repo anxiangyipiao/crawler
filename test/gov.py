@@ -62,7 +62,7 @@ if response.status_code == 200:
 
         cells = row.xpath('.//td')
 
-        print(cells[2].xpath('.//span/text()'))
+        # print(cells[2].xpath('.//span/text()'))
 
         # 如果不存在span标签，是省级行政区
         if not cells[2].xpath('.//span'):
@@ -82,7 +82,7 @@ if response.status_code == 200:
 
         # 如果存在span标签，但span里有2个&nbsp;，是县级行政区
 
-        elif cells[2].xpath('.//span') and cells[2].xpath('.//span/text()') == ['\xa0\xa0 ']:
+        else:
             name = cells[2].text_content().strip()
 
             full_name = f"{province}{city}{name}".strip()
@@ -100,7 +100,7 @@ if response.status_code == 200:
     # save csv
 
     import csv
-    with open('govs.csv', 'w', encoding='utf-8', newline='') as csvfile:
+    with open('gov.csv', 'w', encoding='utf-8', newline='') as csvfile:
         fieldnames = ['code', 'name']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
