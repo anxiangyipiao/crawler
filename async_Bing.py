@@ -14,11 +14,12 @@ class BingSearcher:
     def __init__(self, query):
         self.query = query
         self.encoded_search_query = quote(query)
-        self.search_url = f'https://cn.bing.com/search?&ensearch=1&FORM=BESBTB&q={self.encoded_search_query}'
+        self.search_url = f'https://cn.bing.com/search?&form=bing&q={self.encoded_search_query}'
+        # self.search_url = f'https://www.baidu.com/s?tn=75144485_5_dg&ch=2&ie=utf-8&wd={self.encoded_search_query}'
   
         self.result_url = None
 
-    async def perform_search(self):
+    async def bing_perform_search(self):
         
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
@@ -27,6 +28,10 @@ class BingSearcher:
             try:
                
                 await page.goto(self.search_url)
+
+                #  等待页面加载完成
+                # await page.wait_for_load_state('networkidle')
+
                 await page.wait_for_selector("li.b_algo h2 a", timeout=30000)
 
                 results = await page.query_selector_all("li.b_algo h2 a")
@@ -52,6 +57,48 @@ class BingSearcher:
 
             await browser.close()
 
+
+    async def baidu_perform_search(self):
+        
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            print(f"🔍 正在搜索: {self.query}")
+            try:
+               
+                await page.goto(self.search_url)
+
+                await page.wait_for_selector("a.sc-link _link_1iyz5_2 -v-color-primary block", timeout=30000)
+
+                results = await page.query_selector_all("a.sc-link _link_1iyz5_2 -v-color-primary block")
+
+                found = False
+                for i in range(min(5, len(results))):
+                    link = results[i]
+                    result_url = await link.get_attribute("href")
+                    print(f"⏳ 尝试第 {i + 1} 个结果: {result_url}")
+
+
+
+
+
+                    # if ".gov.cn" in result_url and 'zwfw' not in result_url and 'dzsw' not in result_url.lower():
+                    #     self.result_url = self.get_base_url(result_url)
+                    #     print(f"✅ 找到政府网站: {self.result_url}")
+                    #     found = True
+                    #     break
+
+                if not found:
+                    self.result_url = None
+
+            except Exception as e:
+                print(f"❌ 搜索失败: {e}")
+                self.result_url = "请求错误"
+
+            await browser.close()
+
+
+
     def get_result_url(self):
         return self.result_url
 
@@ -76,13 +123,12 @@ async def process_row(name, semaphore, csv_file):
             return
 
         print(f"🔄 开始处理: {name}")
-        try:
-            searchname = name.split('市')[1]  # 去掉市前缀，避免重复
-        except IndexError:
-            searchname = name
-        query = f"{searchname}人民政府官网"
+
+        search_name = name.split('省')[1]  # 只取第一个词作为搜索关键词
+    
+        query = f"{search_name}人民政府"
         searcher = BingSearcher(query)
-        await searcher.perform_search()
+        await searcher.bing_perform_search()
         found_url = searcher.get_result_url()
 
         print(f"💾 已获取结果: {name} -> {found_url}\n")
@@ -155,8 +201,8 @@ def count(path):
 
 if __name__ == "__main__":
     
-    # asyncio.run(main())
+    asyncio.run(main())
 
     # filter_urls(CSV_FILE)
 
-    count(CSV_FILE)
+    # count(CSV_FILE)

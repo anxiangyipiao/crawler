@@ -34,16 +34,16 @@ class BingSearcher:
             results = page.query_selector_all("li.b_algo h2 a")
 
             found = False
-            for i in range(min(3, len(results))):
+            for i in range(min(8, len(results))):
                 link = results[i]
                 result_url = link.get_attribute("href")
                 print(f"⏳ 尝试第 {i + 1} 个结果: {result_url}")
 
-                if ".gov.cn" in result_url:
-                    self.result_url = result_url
-                    print(f"✅ 找到政府网站: {result_url}")
-                    found = True
-                    break
+                if ".gov.cn" in result_url and 'zwfw' not in result_url and 'dzsw' not in result_url.lower():
+                        self.result_url = self.get_base_url(result_url)
+                        print(f"✅ 找到政府网站: {self.result_url}")
+                        found = True
+                        break
 
             if not found:
                 self.result_url = None
@@ -51,11 +51,11 @@ class BingSearcher:
 
             browser.close()
 
-        time.sleep(1)  # 避免请求过快
+        # time.sleep(1)  # 避免请求过快
 
     def get_result_url(self):
 
-        return self.get_base_url(self.result_url) if self.result_url else "无法访问"
+        return self.get_base_url(self.result_url) if self.result_url else None
     
     def get_base_url(self, url):
         """提取域名根路径"""
@@ -77,14 +77,17 @@ if __name__ == "__main__":
         current_url = row['url']
 
         # 如果已有有效 URL，则跳过
-        if pd.notna(current_url) and current_url is not None and current_url.strip() and ".gov.cn" in current_url:
+        if pd.notna(current_url) and current_url is not None and current_url.strip():
             print(f"⏭️ 已有有效 URL，跳过: {name}")
             continue
 
         print(f"🔄 开始处理: {name}")
 
+
+        search_name = name.replace("广西壮族自治区", "")
+
         # 构造查询词
-        query = f"{name}政府官网"
+        query = f"{search_name}政府"
 
         # 执行搜索
         searcher = BingSearcher(query)
