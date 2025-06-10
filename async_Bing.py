@@ -7,14 +7,15 @@ import random
 
 
 
-CSV_FILE = "gov.csv"
+
+CSV_FILE = "hosps.csv"
 
 
 class BingSearcher:
     def __init__(self, query):
         self.query = query
         self.encoded_search_query = quote(query)
-        self.search_url = f'https://cn.bing.com/search?&form=bing&q={self.encoded_search_query}'
+        self.search_url = f'https://cn.bing.com/search?&q={self.encoded_search_query}'
         # self.search_url = f'https://www.baidu.com/s?tn=75144485_5_dg&ch=2&ie=utf-8&wd={self.encoded_search_query}'
   
         self.result_url = None
@@ -30,9 +31,9 @@ class BingSearcher:
                 await page.goto(self.search_url)
 
                 #  等待页面加载完成
-                # await page.wait_for_load_state('networkidle')
+                await page.wait_for_load_state('networkidle')
 
-                await page.wait_for_selector("li.b_algo h2 a", timeout=30000)
+                # await page.wait_for_selector("li.b_algo h2 a", timeout=30000)
 
                 results = await page.query_selector_all("li.b_algo h2 a")
 
@@ -42,7 +43,8 @@ class BingSearcher:
                     result_url = await link.get_attribute("href")
                     print(f"⏳ 尝试第 {i + 1} 个结果: {result_url}")
 
-                    if ".gov.cn" in result_url and 'zwfw' not in result_url and 'dzsw' not in result_url.lower():
+                    # if ".gov.cn" in result_url and 'zwfw' not in result_url and 'dzsw' not in result_url.lower():
+                    if 'hosp' in result_url.lower():
                         self.result_url = self.get_base_url(result_url)
                         print(f"✅ 找到政府网站: {self.result_url}")
                         found = True
@@ -124,9 +126,9 @@ async def process_row(name, semaphore, csv_file):
 
         print(f"🔄 开始处理: {name}")
 
-        search_name = name.split('省')[1]  # 只取第一个词作为搜索关键词
+       
     
-        query = f"{search_name}人民政府"
+        query = f"{name}公告"
         searcher = BingSearcher(query)
         await searcher.bing_perform_search()
         found_url = searcher.get_result_url()
