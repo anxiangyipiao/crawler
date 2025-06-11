@@ -6,18 +6,21 @@ import time
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from DrissionPage import Chromium, ChromiumOptions
+import requests
 
 CSV_FILE = "hosps.csv"
 
 # 检查是否不包含bohe dxy 相关关键词
-blacklist = ['bohe', 'dxy', 'baidu','jd','weixin','weibo','zhihu','baike','wiki','wikipedia','360','sogou','so.com','99','39']
+blacklist = ['bohe', 'dxy', 'baidu','jd.','weixin','weibo','zhihu','baike','wiki','wikipedia','360','sogou','sohu','99','39','ccvo','qq.com']
+
 
 class BingSearcher:
 
     def __init__(self, query):
         self.query = query
         self.encoded_search_query = quote(query)
-        self.search_url = f'https://cn.bing.com/search?&q={self.encoded_search_query}'
+        self.bing_search_url = f'https://cn.bing.com/search?&q={self.encoded_search_query}'
+        self.baidu_srarch_url = f'https://www.baidu.com/s?tn=75144485_5_dg&ch=2&wd={self.encoded_search_query}%E5%AE%98%E7%BD%91&usm=4&ie=utf-8&base_query={self.encoded_search_query}&tag_key=%E5%AE%98%E7%BD%91'
         self.result_url = None
 
     def bing_perform_search(self):
@@ -43,7 +46,7 @@ class BingSearcher:
             print(f"🔍 正在搜索: {self.query}")
             
             # 访问搜索URL
-            page.get(self.search_url, timeout=15)
+            page.get(self.bing_search_url, timeout=15)
             
             # 等待页面加载
             time.sleep(random.uniform(2, 4))
@@ -100,6 +103,70 @@ class BingSearcher:
                 except Exception as cleanup_error:
                     print(f"⚠️ 清理浏览器时出错: {cleanup_error}")
 
+    def baidu_perform_search(self):
+        """使用DrissionPage进行百度搜索"""
+        browser = None
+        try:
+            # 为每个搜索创建完全独立的浏览器实例
+            co = ChromiumOptions()
+            co.incognito()
+            co.no_imgs(True).mute(True)
+            co.headless()  # 使用无头模式避免GUI冲突
+            co.set_argument('--no-sandbox')
+            co.set_argument('--disable-dev-shm-usage')
+            # 为每个实例分配不同的用户数据目录
+            import tempfile
+            temp_dir = tempfile.mkdtemp()
+            co.set_argument(f'--user-data-dir={temp_dir}')
+            
+            browser = Chromium(co)
+            page = browser.latest_tab
+            
+            print(f"🔍 正在搜索: {self.query}")
+            
+            # 访问搜索URL
+            page.get(self.baidu_srarch_url, timeout=15)
+            
+            # 等待页面加载
+            time.sleep(random.uniform(2, 4))
+            
+            # 查找搜索结果
+            results = page.eles('css:.result.c-container h3 a', timeout=10)
+            
+            if not results:
+                print(f"❌ 未找到搜索结果")
+                self.result_url = None
+                return
+            
+            found = False
+            for i, link in enumerate(results[:1]):  # 只检查前3个结果
+                try:
+                    result_url = link.attr('href')
+                    if result_url:
+                        print(f"⏳ 尝试第 {i + 1} 个结果: {result_url}")
+                        
+                        # 处理百度重定向链接
+                        real_url = self.resolve_baidu_redirect(result_url)
+
+                        if not any(kw in real_url for kw in blacklist):
+                            self.result_url = self.get_base_url(real_url)
+                            print(f"✅ 找到医院网站: {self.result_url}")
+                            found = True
+                            break
+                        else:
+                            found = False
+
+                except Exception as e:
+                    print(f"⚠️ 处理链接时出错: {e}")
+                    continue
+            
+            if not found:
+                self.result_url = None
+                print(f"❌ 未找到合适的网站")
+                
+        except Exception as e:
+            print(f"❌ 搜索失败: {e}")
+
     def get_result_url(self):
         return self.result_url
 
@@ -109,6 +176,58 @@ class BingSearcher:
             return f"{parsed_url.scheme}://{parsed_url.netloc}"
         except:
             return url
+
+    def resolve_baidu_redirect(self, baidu_url):
+        """解析百度重定向链接，获取真实URL"""
+        try:
+            if 'baidu.com/link' not in baidu_url:
+                # 如果不是百度重定向链接，直接返回
+                return baidu_url
+            
+            print(f"🔄 解析百度重定向: {baidu_url}")
+            
+            # 使用requests请求百度重定向链接
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            
+            # 设置不自动跟随重定向，手动处理
+            response = requests.get(baidu_url, headers=headers, allow_redirects=False, timeout=10)
+            
+            # 检查是否有重定向
+            if response.status_code in [301, 302, 303, 307, 308]:
+                real_url = response.headers.get('Location')
+                if real_url:
+                    print(f"✅ 获取真实URL: {real_url}")
+                    return real_url
+            
+            # 如果没有重定向，尝试解析响应内容中的URL
+            if response.status_code == 200:
+                content = response.text
+                # 尝试从页面内容中提取真实URL
+                import re
+                url_pattern = r'URL=\'([^\']+)\''
+                match = re.search(url_pattern, content)
+                if match:
+                    real_url = match.group(1)
+                    print(f"✅ 从内容中提取URL: {real_url}")
+                    return real_url
+                    
+                # 另一种提取方式
+                url_pattern2 = r'window\.location\.replace\("([^"]+)"\)'
+                match2 = re.search(url_pattern2, content)
+                if match2:
+                    real_url = match2.group(1)
+                    print(f"✅ 从JS中提取URL: {real_url}")
+                    return real_url
+            
+            print(f"⚠️ 无法解析重定向，返回原URL")
+            return baidu_url
+            
+        except Exception as e:
+            print(f"❌ 解析百度重定向失败: {e}")
+            return baidu_url
+
 
 # 线程锁
 file_lock = threading.Lock()
@@ -135,9 +254,9 @@ def process_single_hospital(name, csv_file):
         print(f"🔄 开始处理: {name}")
         
         # 搜索医院官网
-        query = f'{name}官网'
+        query = f'{name}'
         searcher = BingSearcher(query)
-        searcher.bing_perform_search()
+        searcher.baidu_perform_search()
         found_url = searcher.get_result_url()
         
         print(f"💾 已获取结果: {name} -> {found_url}")
@@ -149,7 +268,7 @@ def process_single_hospital(name, csv_file):
             df.to_csv(csv_file, index=False, encoding='utf-8-sig')
         
         # 添加随机延迟，避免请求过快
-        time.sleep(random.uniform(3, 6))
+        time.sleep(random.uniform(1, 3))
         
         return name, found_url
         
@@ -250,7 +369,7 @@ def main_single_thread():
             # 搜索医院官网
             query = f'{name}官网'
             searcher = BingSearcher(query)
-            searcher.bing_perform_search()
+            searcher.baidu_perform_search()
             found_url = searcher.get_result_url()
             
             # 更新CSV文件
@@ -260,7 +379,7 @@ def main_single_thread():
             print(f"💾 结果: {name} -> {found_url}")
             
             # 延迟
-            time.sleep(random.uniform(5, 8))
+            time.sleep(random.uniform(1, 3))
             
         except Exception as e:
             print(f"❌ 处理失败: {name} - {e}")
@@ -278,9 +397,7 @@ def filter_urls(path):
         # 过滤重复URL（保留第一个）
         df.loc[df['url'].duplicated(keep='first'), 'url'] = None
         
-        # 过滤包含特定关键词的无效URL
-        invalid_keywords = ['bohe', 'dxy', 'baidu']
-        for keyword in invalid_keywords:
+        for keyword in blacklist:
             df.loc[df['url'].str.contains(keyword, na=False), 'url'] = None
         
         # 过滤请求错误
@@ -319,6 +436,10 @@ def count_valid_urls(path):
     except Exception as e:
         print(f"❌ 统计失败: {e}")
         return 0
+
+
+
+
 
 if __name__ == "__main__":
 
